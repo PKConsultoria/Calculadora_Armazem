@@ -9,7 +9,7 @@ st.title("📦 Calculadora de Receitas e Custos - Armazém")
 # ===============================
 # Informações básicas
 # ===============================
-st.header("Informações Básicas")
+st.header("ℹ️ Informações Básicas")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -22,7 +22,7 @@ with col3:
 # ===============================
 # Detalhes da operação
 # ===============================
-st.header("Detalhes da Operação")
+st.header("🏗️ Detalhes da Operação")
 
 tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
 qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
@@ -145,14 +145,14 @@ elif embalagem == "Outros":
 # ===============================
 # Dados financeiros
 # ===============================
-st.header("Dados Financeiros")
+st.header("📑 Dados Financeiros")
 receita = st.number_input("Receita Bruta (R$)", min_value=0.0, step=100.0, format="%.2f")
 custos_fixos = st.number_input("Custos Fixos (R$)", min_value=0.0, step=100.0, format="%.2f")
 custos_variaveis = st.number_input("Custos Variáveis (R$)", min_value=0.0, step=100.0, format="%.2f")
 volume = st.number_input("Volume Movimentado (unidades)", min_value=1, step=1)
 
 # ===============================
-# Cálculos
+# Cálculos 🧮
 # ===============================
 lucro_bruto = receita - custos_variaveis
 lucro_liquido = lucro_bruto - custos_fixos
