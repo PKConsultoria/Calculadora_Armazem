@@ -6,6 +6,7 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="
 
 st.title("📦 Calculadora de Receitas e Custos - Armazém")
 
+
 # ===============================
 # Informações básicas
 # ===============================
