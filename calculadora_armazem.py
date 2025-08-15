@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="centered")
+st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="wide")
 
 st.title("📦 Calculadora de Receitas e Custos - Armazém")
 
@@ -10,9 +10,13 @@ st.title("📦 Calculadora de Receitas e Custos - Armazém")
 # Informações básicas
 # ===============================
 st.header("Informações Básicas")
-armazem = st.selectbox("Armazém", ["Espinheiros", "Garuva"])
-cliente = st.text_input("Cliente")
-vendedor = st.text_input("Vendedor")
+col1, col2, col3 = st.columns(3)
+with col1:
+    armazem = st.selectbox("Armazém", ["Espinheiros", "Garuva"])
+with col2:
+    cliente = st.text_input("Cliente")
+with col3:
+    vendedor = st.text_input("Vendedor")
 
 # ===============================
 # Detalhes da operação
