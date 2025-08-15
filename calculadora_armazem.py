@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="centered")
+st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="centered")
 
-st.title("📦 Calculadora de Receitas e Custos - Armazém")
-
+st.title("🏭Calculadora de Receitas e Custos - Armazém")
 
 # ===============================
 # Informações básicas
@@ -144,9 +143,25 @@ elif embalagem == "Outros":
     qtd_rolos = st.number_input("Quantidade de Outros Produtos", min_value=1, step=1)
 
 # ===============================
+# Dimensões da Carga
+# ===============================
+st.header("📦 Dimensões da Carga")
+
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    comprimento = st.number_input("Comprimento (m)", min_value=0.0, step=0.1, format="%.2f")
+with col2:
+    largura = st.number_input("Largura (m)", min_value=0.0, step=0.1, format="%.2f")
+with col3:
+    altura = st.number_input("Altura (m)", min_value=0.0, step=0.1, format="%.2f")
+with col4:
+    peso = st.number_input("Peso (kg)", min_value=0.0, step=0.1, format="%.2f")
+
+# ===============================
 # Dados financeiros
 # ===============================
 st.header("📑 Dados Financeiros")
+
 receita = st.number_input("Receita Bruta (R$)", min_value=0.0, step=100.0, format="%.2f")
 custos_fixos = st.number_input("Custos Fixos (R$)", min_value=0.0, step=100.0, format="%.2f")
 custos_variaveis = st.number_input("Custos Variáveis (R$)", min_value=0.0, step=100.0, format="%.2f")
@@ -166,6 +181,7 @@ valor_medio_por_ton = (valor_carga / peso_total_t) if peso_total_t > 0 else 0.0
 # Resultados
 # ===============================
 st.subheader("📊 Resultados")
+
 col1, col2 = st.columns(2)
 with col1:
     st.metric("Lucro Bruto", f"R$ {lucro_bruto:,.2f}")
