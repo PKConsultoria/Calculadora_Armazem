@@ -129,6 +129,10 @@ produto_opcoes = [
 produto = st.selectbox("Tipo de Produto", produto_opcoes)
 valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
 embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
+if embalagem == "Caixaria":
+    qtd_caixas = st.number_input("Quantidade de Caixas por Container", min_value=1, step=1)
+elif embalagem == "Rolo":
+    qtd_rolos = st.number_input("Quantidade de Rolos", min_value=1, step=1)
 
 # ===============================
 # Dados financeiros
