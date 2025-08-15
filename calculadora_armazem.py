@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="wide")
+st.set_page_config(page_title="Calculadora Armazém", page_icon="📦", layout="centered")
 
 st.title("📦 Calculadora de Receitas e Custos - Armazém")
 
