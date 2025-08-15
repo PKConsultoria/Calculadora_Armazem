@@ -10,6 +10,7 @@ st.title("📦 Calculadora de Receitas e Custos - Armazém")
 # Informações básicas
 # ===============================
 st.header("Informações Básicas")
+
 col1, col2, col3 = st.columns(3)
 with col1:
     armazem = st.selectbox("Armazém", ["Espinheiros", "Garuva"])
@@ -24,8 +25,8 @@ with col3:
 st.header("Detalhes da Operação")
 
 tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
-qtd_containers = st.number_input("Quantidade de Containers", min_value=1, step=1)
-peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
+qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
+peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0, step=0.1, format="%.2f")
 
 produto_opcoes = [
     "01 - Animais vivos.",
@@ -127,7 +128,7 @@ produto_opcoes = [
 ]
 produto = st.selectbox("Tipo de Produto", produto_opcoes)
 valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
-embalagem = st.selectbox("Como vem a carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
+embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
 
 # ===============================
 # Dados financeiros
