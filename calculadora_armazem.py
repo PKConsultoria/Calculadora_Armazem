@@ -26,7 +26,7 @@ st.header("Detalhes da Operação")
 
 tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
 qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
-peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0, step=0.1, format="%.2f")
+peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
 
 produto_opcoes = [
     "01 - Animais vivos.",
