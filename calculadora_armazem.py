@@ -26,6 +26,11 @@ st.header("🏗️ Detalhes da Operação")
 
 tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
 qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
+
+# --- Movendo o campo para sempre aparecer ---
+qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, step=1)
+# --- Fim da alteração de posição ---
+
 peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
 
 produto_opcoes = [
@@ -75,7 +80,7 @@ produto_opcoes = [
     "44 - Madeira, carvão vegetal e obras de madeira.",
     "45 - Cortiça e suas obras.",
     "46 - Obras de espartaria ou de cestaria.",
-    "47 - Pastas de madeira ou de outras matérias fibrosas celulósicas; papel ou cartão para reciclar (desperdícios e resíduos).",
+    "47 - Pastas de madeira ou de outras matérias celulósicas; papel ou cartão para reciclar (desperdícios e resíduos).",
     "48 - Papel e cartão; obras de pasta de celulose, papel ou de cartão.",
     "49 - Livros, jornais, gravuras e outros produtos das indústrias gráficas; textos manuscritos ou datilografados, planos e plantas.",
     "50 - Seda.",
@@ -129,12 +134,6 @@ produto_opcoes = [
 produto = st.selectbox("Tipo de Produto", produto_opcoes)
 valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
 embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
-
-# --- Adicionando a nova variável 'qtd_pallets' ---
-if embalagem == "Palletizada":
-    qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=1, step=1)
-else:
-    qtd_pallets = 0 # Define como 0 para os outros tipos
 
 # --- Atualizando a variável 'qtd_caixas' com base na embalagem ---
 qtd_caixas = 0
