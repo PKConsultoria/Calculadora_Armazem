@@ -242,9 +242,6 @@ with st.expander("📥 Recebimento"):
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
             
-            # -----------------------------
-            # Cálculo da Descarga (automático)
-            # -----------------------------
             if "Descarga" in nome:
                 salario_conferente = 4186.13
                 # Tempo por container em horas
@@ -259,14 +256,45 @@ with st.expander("📥 Recebimento"):
                 taxa_ocupacao = demanda_horas / total_horas_disponibilizadas
                 # Custo descarga
                 custo_descarga_operacao = salario_conferente * taxa_ocupacao
-                
-                # Somar ao custo total de serviços
                 custo_servicos += custo_descarga_operacao
 
+                # Adicionar à discriminação
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Qtd Containers": qtd_containers,
+                    "Tempo/Container (h)": tempo_por_container_horas,
+                    "Demanda (h)": demanda_horas,
+                    "HeadCount (h disponível)": headcount,
+                    "Taxa Ocupação": taxa_ocupacao,
+                    "Custo (R$)": custo_descarga_operacao
+                })
+
             elif "Etiquetagem" in nome:
-                custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
+                custo_item = valores_servicos[nome] * qtd_caixas * qtd_containers
+                custo_servicos += custo_item
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Qtd Caixas": qtd_caixas,
+                    "Qtd Containers": qtd_containers,
+                    "Custo (R$)": custo_item
+                })
+
             elif nome == "TFA":
                 custo_servicos += valores_servicos[nome]
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Custo (R$)": valores_servicos[nome]
+                })
+
+discriminacao = []
+
+# -----------------------------
+# Mostrar discriminação
+# -----------------------------
+if discriminacao:
+    st.subheader("📋 Discriminação de Custos - Recebimento")
+    df_discriminacao = pd.DataFrame(discriminacao)
+    st.dataframe(df_discriminacao.style.format({"Custo (R$)": "R$ {:,.2f}"}))
 
 # -----------------------------
 # Expedição
