@@ -158,7 +158,95 @@ with col4:
     peso = st.number_input("Peso (kg)", min_value=0.0, step=0.1, format="%.2f")
 
 
- 4.186,13 
+# ===============================
+# Serviços
+# ===============================
+st.header("🛠️ Serviços")
+
+# tempo médio de execução
+tempos_execucao = {"Batida": 120, "Palletizada": 30}
+tempo_exec = tempos_execucao[tipo_carga]
+
+st.info(f"⏱️ Tempo estimado de execução por operação: **{tempo_exec} minutos**")
+
+# Serviços por tipo de carga
+servicos = {
+    "Recebimento": {
+        "Batida": ["Descarga Batida", "Etiquetagem Batida", "TFA"],
+        "Palletizada": ["Descarga Palletizada", "Etiquetagem Palletizada", "TFA"]
+    },
+    "Expedição": {
+        "Batida": ["Separação Batida", "Carregamento Batido", "Etiquetagem Batida"],
+        "Palletizada": ["Separação Palletizada", "Carregamento Palletizado", "Etiquetagem Palletizada"]
+    },
+    "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
+}
+
+# Valores de cada serviço
+valores_servicos = {
+    "Descarga Batida": 100.0,
+    "Descarga Palletizada": 80.0,
+    "Etiquetagem Batida": 0.50,
+    "Etiquetagem Palletizada": 0.30,
+    "TFA": 200.0,
+    "Separação Batida": 1.20,
+    "Separação Palletizada": 5.0,
+    "Carregamento Batido": 90.0,
+    "Carregamento Palletizado": 70.0,
+    "Diária": 2.0,
+    "Pico Quinzenal": 500.0,
+    "Pico Mensal": 900.0
+}
+
+st.subheader("Selecione os serviços contratados:")
+
+servicos_selecionados = []
+custo_servicos = 0.0
+
+# -----------------------------
+# Recebimento
+# -----------------------------
+with st.expander("📥 Recebimento"):
+    for nome in servicos["Recebimento"][tipo_carga]:
+        if st.checkbox(nome, key=f"rec_{nome}"):
+            servicos_selecionados.append(nome)
+            if "Descarga" in nome:
+                custo_servicos += valores_servicos[nome] * qtd_containers
+            elif "Etiquetagem" in nome:
+                custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
+            elif nome == "TFA":
+                custo_servicos += valores_servicos[nome]
+
+# -----------------------------
+# Expedição
+# -----------------------------
+with st.expander("📦 Expedição"):
+    for nome in servicos["Expedição"][tipo_carga]:
+        if st.checkbox(nome, key=f"exp_{nome}"):
+            servicos_selecionados.append(nome)
+            if "Separação" in nome or "Etiquetagem" in nome:
+                custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
+            elif "Carregamento" in nome:
+                custo_servicos += valores_servicos[nome] * qtd_containers
+
+# -----------------------------
+# Armazenagem (sempre aparece)
+# -----------------------------
+with st.expander("🏢 Armazenagem"):
+    for nome in servicos["Armazenagem"]:
+        if st.checkbox(nome, key=f"arm_{nome}"):
+            servicos_selecionados.append(nome)
+            if nome == "Diária":
+                dias = st.number_input("Dias de armazenagem", min_value=1, step=1, value=1)
+                custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers * dias
+            else:
+                custo_servicos += valores_servicos[nome]
+
+# -----------------------------
+# Custo total
+# -----------------------------
+st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
+
 
 # ===============================
 # Dados financeiros
