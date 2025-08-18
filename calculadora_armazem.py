@@ -338,7 +338,7 @@ with st.expander("📥 Recebimento"):
 
                 # Custo da Etiqueta
                 custo_etiqueta_unitario = 0.06
-                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * unidades_para_etiquetagem
+                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_pallets
                 custo_servicos += custo_etiquetas
                 
                 discriminacao.append({
