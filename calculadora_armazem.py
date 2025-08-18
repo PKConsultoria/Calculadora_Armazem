@@ -325,6 +325,7 @@ with st.expander("📥 Recebimento"):
 if discriminacao:
     st.subheader("📋 Discriminação de Custos - Recebimento")
     df_discriminacao = pd.DataFrame(discriminacao)
+    df_discriminacao.index += 1
     st.dataframe(df_discriminacao.style.format({"Custo (R$)": "R$ {:,.2f}"}))
 
 # -----------------------------
