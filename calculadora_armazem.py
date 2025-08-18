@@ -256,32 +256,32 @@ with st.expander("📥 Recebimento"):
             # -----------------------------
             # Etiquetagem
             # -----------------------------
-            if "Etiquetagem" in nome:
-                salario_assistente = 3713.31
-                tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
-                demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
-                headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                # mesmo padrão: salário x taxa de ocupação x demanda
-                custo_item = salario_assistente * taxa_ocupacao * demanda_horas
+if "Etiquetagem" in nome:
+    salario_assistente = 3713.31
+    tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
+    demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
+    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+    # salário x taxa de ocupação x demanda
+    custo_item = salario_assistente * taxa_ocupacao * demanda_horas
 
-                # Custo das etiquetas (R$0,06 por container x qtd de pallets)
-                custo_etiquetas = 0.06 * qtd_containers * qtd_caixas
-                custo_total_etiquetagem = custo_item + custo_etiquetas
+    # Custo das etiquetas
+    custo_etiquetas = 0.06 * qtd_containers * qtd_caixas
+    custo_total_etiquetagem = custo_item + custo_etiquetas
 
-                custo_servicos += custo_total_etiquetagem
+    custo_servicos += custo_total_etiquetagem
 
-                discriminacao.append({
-                    "Serviço": nome,
-                    "Função": "Assistente",
-                    "Qtd Containers": qtd_containers,
-                    "Qtd Caixas": qtd_caixas,
-                    "Tempo/Container (h)": tempo_pallet_h,
-                    "Demanda (h)": demanda_horas,
-                    "HeadCount (h disponível)": headcount_val,
-                    "Taxa Ocupação": taxa_ocupacao,
-                    "Custo (R$)": custo_total_etiquetagem
-                })
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "Assistente",
+        "Qtd Containers": qtd_containers,
+        "Qtd Caixas": qtd_caixas,
+        "Tempo/Container (h)": tempo_pallet_h,
+        "Demanda (h)": demanda_horas,
+        "HeadCount (h disponível)": headcount_val,
+        "Taxa Ocupação": taxa_ocupacao,
+        "Custo (R$)": custo_total_etiquetagem
+    })
 
             # -----------------------------
             # TFA
