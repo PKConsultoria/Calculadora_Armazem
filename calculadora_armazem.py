@@ -227,7 +227,7 @@ with st.expander("📥 Recebimento"):
 # -----------------------------
 with st.expander("📦 Expedição"):
     for nome, valor in servicos["Expedição"].items():
-        if tipo_carga == "Batida" or "Batido" in nome:
+        if tipo_carga == "Batida" and ("Batida" in nome or "Batido" in nome):
             if st.checkbox(nome, key=f"exp_{nome}"):
                 servicos_selecionados.append(nome)
                 if "Separação" in nome:
@@ -237,7 +237,7 @@ with st.expander("📦 Expedição"):
                 elif "Carregamento" in nome:
                     custo_servicos += valor * qtd_containers  
 
-        if tipo_carga == "Palletizada" or "Palletizado" in nome:
+        if tipo_carga == "Palletizada" and ("Palletizada" in nome or "Palletizado" in nome):
             if st.checkbox(nome, key=f"exp_{nome}"):
                 servicos_selecionados.append(nome)
                 if "Separação" in nome:
