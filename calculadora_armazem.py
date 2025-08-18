@@ -278,20 +278,29 @@ with st.expander("📥 Recebimento"):
                     if func["nome"] == "Stretch":
                         # Custo total de stretch (por pallet)
                         custo = func["salario"] * qtd_pallets * qtd_containers
+                        tempo_horas_total = 0
+                        taxa_ocupacao = 0
                     elif func["nome"] == "Mão de Obra de Terceiros":
                         # Custo por container
                         custo = func["salario"] * qtd_containers
-elif func["nome"] == "Máquina Elétrica":
-    # Considera todas as unidades da operação (pallets + caixas/outros)
-    unidades_totais = qtd_pallets + qtd_caixas_outros
-    tempo_total_operacao = (func["tempo"] / 60) * qtd_containers * unidades_totais  # horas totais
-    
-    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-    taxa_ocupacao_maquina = (tempo_total_operacao / headcount_val) if headcount_val > 0 else 0
-    
-    custo = func["salario"] * taxa_ocupacao_maquina
-    tempo_horas_total = tempo_total_operacao
-    taxa_ocupacao = taxa_ocupacao_maquina
+                        tempo_horas_total = 0
+                        taxa_ocupacao = 0
+                    elif func["nome"] == "Máquina Elétrica":
+                        # Novo cálculo: salário * taxa de ocupação
+                        # o tempo da máquina não é o tempo por contêiner, mas sim o tempo por UNIDADE (pallets + caixas)
+                        # O tempo total da máquina é (tempo por minuto / 60) * qtd_containers * unidades totais
+                        
+                        if unidades_totais > 0:
+                            tempo_por_unidade_h = (func["tempo"] / 60) / unidades_totais
+                            tempo_total_operacao = tempo_por_unidade_h * qtd_containers * unidades_totais
+                            taxa_ocupacao_maquina = (tempo_total_operacao / headcount_val) if headcount_val > 0 else 0
+                            custo = func["salario"] * taxa_ocupacao_maquina
+                            tempo_horas_total = tempo_total_operacao
+                            taxa_ocupacao = taxa_ocupacao_maquina
+                        else:
+                            custo = 0
+                            tempo_horas_total = 0
+                            taxa_ocupacao = 0
                     else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_por_container_h = func["tempo"] / 60
                         tempo_horas_total = tempo_por_container_h * qtd_containers
@@ -413,24 +422,3 @@ with st.expander("📦 Expedição"):
                 unidades_expedicao = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
                 custo_servicos += valores_servicos[nome] * unidades_expedicao * qtd_containers
             elif "Carregamento" in nome:
-                custo_servicos += valores_servicos[nome] * qtd_containers
-
-# -----------------------------
-# Armazenagem (sempre aparece)
-# -----------------------------
-with st.expander("🏢 Armazenagem"):
-    unidades_armazenagem = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
-
-    for nome in servicos["Armazenagem"]:
-        if st.checkbox(nome, key=f"arm_{nome}"):
-            servicos_selecionados.append(nome)
-            if nome == "Diária":
-                dias = st.number_input("Dias de armazenagem", min_value=1, step=1, value=1)
-                custo_servicos += valores_servicos[nome] * unidades_armazenagem * qtd_containers * dias
-            else:
-                custo_servicos += valores_servicos[nome]
-
-# -----------------------------
-# Custo total
-# -----------------------------
-st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
