@@ -314,13 +314,13 @@ with st.expander("📥 Recebimento"):
                 unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
                 # Custo do Assistente de Etiquetagem
-                        salario_assistente = 3713.31
-                        tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
-                        demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                        # salário x taxa de ocupação x demanda
-                        custo_item = salario_assistente * taxa_ocupacao * demanda_horas
+                    salario_assistente = 3713.31
+                    tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
+                    demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
+                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+                    # salário x taxa de ocupação x demanda
+                    custo_item = salario_assistente * taxa_ocupacao * demanda_horas
 
                 custo_servicos += custo_assistente
                 discriminacao.append({
