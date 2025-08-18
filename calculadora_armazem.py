@@ -303,7 +303,6 @@ with st.expander("📥 Recebimento"):
                         "Custo (R$)": custo
                     })
 
-
 # -----------------------------
 # Etiquetagem
 # -----------------------------
