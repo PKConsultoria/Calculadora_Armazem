@@ -244,55 +244,59 @@ with st.expander("📥 Recebimento"):
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
             
-if "Descarga" in nome:
-    # Funções existentes
-    funcoes = [
-        {"nome": "Conferente", "salario": 4186.13, "tempo": 120},
-        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-        {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
-        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120, "multiplicador": 1},  # R$ 330 por container
-        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120, "multiplicador": 1},  # valor por hora
-        {"nome": "Stretch", "salario": 6.85, "tempo": 0}  # valor por caixa
-    ]
-    
-    for func in funcoes:
-        if func["nome"] == "Stretch":
-            custo = func["salario"] * qtd_caixas * qtd_containers
-            tempo_horas = 0
-            demanda_horas = 0
-            taxa_ocupacao = 0
-        elif func["nome"] == "Mão de Obra de Terceiros":
-            tempo_horas = func["tempo"] / 60
-            demanda_horas = tempo_horas * qtd_containers
-            headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-            taxa_ocupacao = demanda_horas / headcount
-            custo = func["salario"] * taxa_ocupacao
-        elif func["nome"] == "Máquina Elétrica":
-            tempo_horas = func["tempo"] / 60
-            demanda_horas = tempo_horas * qtd_containers
-            headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-            taxa_ocupacao = demanda_horas / headcount
-            custo = func["salario"] * tempo_horas * taxa_ocupacao
-        else:  # Conferente, Analista, Supervisor
-            tempo_horas = func["tempo"] / 60
-            demanda_horas = tempo_horas * qtd_containers
-            headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-            taxa_ocupacao = demanda_horas / headcount
-            custo = func["salario"] * taxa_ocupacao
-        
-        custo_servicos += custo
-        discriminacao.append({
-            "Serviço": nome,
-            "Função": func["nome"],
-            "Qtd Containers": qtd_containers,
-            "Qtd Caixas": qtd_caixas if "Stretch" in func["nome"] else "",
-            "Tempo/Container (h)": tempo_horas,
-            "Demanda (h)": demanda_horas,
-            "HeadCount (h disponível)": headcount if "Stretch" not in func["nome"] else "",
-            "Taxa Ocupação": taxa_ocupacao,
-            "Custo (R$)": custo
-        })
+            if "Descarga" in nome:
+                # Lista de funções/subitens
+                funcoes = [
+                    {"nome": "Conferente", "salario": 4186.13, "tempo": 120},
+                    {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+                    {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
+                    {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
+                    {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
+                    {"nome": "Stretch", "salario": 6.85, "tempo": 0}
+                ]
+                
+                for func in funcoes:
+                    if func["nome"] == "Stretch":
+                        custo = func["salario"] * qtd_caixas * qtd_containers
+                        tempo_horas = 0
+                        demanda_horas = 0
+                        taxa_ocupacao = 0
+                        headcount_val = ""
+                    elif func["nome"] == "Mão de Obra de Terceiros":
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
+                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                        taxa_ocupacao = demanda_horas / headcount_val
+                        custo = func["salario"] * taxa_ocupacao
+                    elif func["nome"] == "Máquina Elétrica":
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
+                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                        taxa_ocupacao = demanda_horas / headcount_val
+                        custo = func["salario"] * tempo_horas * taxa_ocupacao
+                    else:  # Conferente, Analista, Supervisor
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
+                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                        taxa_ocupacao = demanda_horas / headcount_val
+                        custo = func["salario"] * taxa_ocupacao
+                    
+                    custo_servicos += custo
+                    discriminacao.append({
+                        "Serviço": nome,
+                        "Função": func["nome"],
+                        "Qtd Containers": qtd_containers,
+                        "Qtd Caixas": qtd_caixas if func["nome"] == "Stretch" else "",
+                        "Tempo/Container (h)": tempo_horas,
+                        "Demanda (h)": demanda_horas,
+                        "HeadCount (h disponível)": headcount_val,
+                        "Taxa Ocupação": taxa_ocupacao,
+                        "Custo (R$)": custo
+                    })
 
+            # -----------------------------
+            # Etiquetagem
+            # -----------------------------
             elif "Etiquetagem" in nome:
                 custo_item = valores_servicos[nome] * qtd_caixas * qtd_containers
                 custo_servicos += custo_item
@@ -304,6 +308,9 @@ if "Descarga" in nome:
                     "Custo (R$)": custo_item
                 })
 
+            # -----------------------------
+            # TFA
+            # -----------------------------
             elif nome == "TFA":
                 custo_servicos += valores_servicos[nome]
                 discriminacao.append({
