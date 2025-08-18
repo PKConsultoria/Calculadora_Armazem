@@ -163,49 +163,58 @@ with col4:
 # ===============================
 st.header("🛠️ Serviços")
 
+servicos = {
+    "Recebimento": {
+        "Descarga Batida": 100.0,   # por container
+        "Descarga Palletizada": 80.0, # por container
+        "Etiquetagem Batida": 0.50,   # por unidade
+        "Etiquetagem Palletizada": 0.30, # por unidade
+        "TFA": 200.0                 # valor fixo
+    },
+    "Expedição": {
+        "Separação Batida": 1.20,     # por unidade
+        "Separação Palletizada": 5.0, # por pallet
+        "Carregamento Batido": 90.0,  # por container
+        "Carregamento Palletizado": 70.0, # por container
+        "Etiquetagem Batida": 0.50,   # por unidade
+        "Etiquetagem Palletizada": 0.30  # por unidade
+    },
+    "Armazenagem": {
+        "Diária": 2.0,            # por unidade/dia
+        "Pico Quinzenal": 500.0,  # valor fixo
+        "Pico Mensal": 900.0      # valor fixo
+    }
+}
+
 # tempos médios de execução por tipo
 tempos_execucao = {
     "Batida": 120,       # minutos
     "Palletizada": 30    # minutos
 }
 
-tempo_padrao = tempos_execucao.get(tipo_carga, 0)
-
-st.markdown(f"⏱️ Tempo estimado de execução por container: **{tempo_padrao} minutos**")
-
 # função para filtrar serviços por tipo de carga
 def filtrar_servicos(servicos_dict, tipo):
     filtrados = {}
     for categoria, itens in servicos_dict.items():
         for nome, valor in itens.items():
-            if tipo in nome or nome == "TFA":  # só serviços do tipo selecionado + TFA
+            # inclui serviços do tipo selecionado + TFA
+            if tipo in nome or nome == "TFA":
                 if categoria not in filtrados:
                     filtrados[categoria] = {}
                 filtrados[categoria][nome] = valor
     return filtrados
 
+
+# ===============================
+# Serviços (filtrados por tipo de carga)
+# ===============================
+st.header("🛠️ Serviços")
+
+tempo_padrao = tempos_execucao.get(tipo_carga, 0)
+st.markdown(f"⏱️ Tempo estimado de execução por container: **{tempo_padrao} minutos**")
+
 servicos_filtrados = filtrar_servicos(servicos, tipo_carga)
 
-st.subheader("Selecione os serviços contratados:")
-
-servicos_selecionados = []
-custo_servicos = 0.0
-
-# percorre apenas os serviços filtrados
-for categoria, itens in servicos_filtrados.items():
-    with st.expander(f"📂 {categoria}"):
-        for nome, valor in itens.items():
-            if st.checkbox(nome, key=f"{categoria}_{nome}"):
-                servicos_selecionados.append(nome)
-                if "Descarga" in nome or "Carregamento" in nome:
-                    custo_servicos += valor * qtd_containers
-                elif "Etiquetagem" in nome or "Separação" in nome:
-                    custo_servicos += valor * qtd_caixas * qtd_containers
-                else:  # fixos, como TFA
-                    custo_servicos += valor
-
-# resumo
-st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
 
 # ===============================
 # Dados financeiros
