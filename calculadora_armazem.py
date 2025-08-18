@@ -304,10 +304,10 @@ with st.expander("📥 Recebimento"):
                     })
 
             # -----------------------------
-            # Etiquetagem (Assistente)
+            # Etiquetagem
             # -----------------------------
             elif "Etiquetagem" in nome:
-                salario_assistente = 3713.31
+            salario_assistente = 3713.31
                 tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
                 demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
@@ -315,10 +315,17 @@ with st.expander("📥 Recebimento"):
                 # mesmo padrão: salário x taxa de ocupação x demanda
                 custo_item = salario_assistente * taxa_ocupacao * demanda_horas
 
+            elif "Etiquetas" in nome:
+                custo_item = 0.06 * qtd_containers * qtd_caixas
+                tempo_horas = 0
+                demanda_horas = 0
+                headcount_val = ""
+                taxa_ocupacao = 0
+
                 custo_servicos += custo_item
                 discriminacao.append({
                     "Serviço": nome,
-                    "Função": "Assistente (Etiquetagem)",
+                    "Função": "Assistente",
                     "Qtd Containers": qtd_containers,
                     "Qtd Caixas": qtd_caixas,
                     "Tempo/Container (h)": tempo_pallet_h,
