@@ -301,16 +301,36 @@ with st.expander("📥 Recebimento"):
             # -----------------------------
             # Etiquetagem
             # -----------------------------
-            elif "Etiquetagem" in nome:
-                custo_item = valores_servicos[nome] * qtd_caixas * qtd_containers
-                custo_servicos += custo_item
-                discriminacao.append({
-                    "Serviço": nome,
-                    "Função": "Etiquetagem",
-                    "Qtd Caixas": qtd_caixas,
-                    "Qtd Containers": qtd_containers,
-                    "Custo (R$)": custo_item
-                })
+elif "Etiquetagem" in nome:
+    # parâmetros do assistente
+    salario_assistente = 3713.31
+    tempo_pallet_h = 1 / 3600  # 1 segundo = 1/3600 horas
+    
+    # demanda total em horas
+    demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas  # qtd_caixas = pallets por container
+    
+    # headcount disponível
+    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+    
+    # taxa de ocupação
+    taxa_ocupacao = demanda_horas / headcount_val
+    
+    # custo
+    custo_item = salario_assistente * taxa_ocupacao * demanda_horas
+    
+    custo_servicos += custo_item
+    
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "Assistente",
+        "Qtd Containers": qtd_containers,
+        "Qtd Caixas": qtd_caixas,
+        "Tempo/Container (h)": tempo_pallet_h,
+        "Demanda (h)": demanda_horas,
+        "HeadCount (h disponível)": headcount_val,
+        "Taxa Ocupação": taxa_ocupacao,
+        "Custo (R$)": custo_item
+    })
 
             # -----------------------------
             # TFA
