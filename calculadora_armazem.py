@@ -247,7 +247,7 @@ with st.expander("📥 Recebimento"):
             if "Descarga" in nome:
                 salario_conferente = 4186.13
                 # Tempo por container em horas
-                tempo_por_container_horas = tempo_exec / 60
+                tempo_por_container_horas = tempo_exec / 120
                 # Demanda em horas
                 demanda_horas = tempo_por_container_horas * qtd_containers
                 # HeadCount disponível
