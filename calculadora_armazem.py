@@ -247,7 +247,7 @@ with st.expander("📥 Recebimento"):
             if "Descarga" in nome:
                 # Lista de funções
                 funcoes = [
-                    {"nome": "Conferente", "salario": 4186.13, "tempo": 120},
+                    {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
                     {"nome": "Supervisor", "salario": 6775.58, "tempo": 45}
                 ]
