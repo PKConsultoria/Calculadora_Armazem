@@ -157,6 +157,37 @@ with col3:
 with col4:
     peso = st.number_input("Peso (kg)", min_value=0.0, step=0.1, format="%.2f")
 
+# ===============================
+# Métricas Adotadas
+# ===============================
+st.header("📊 Métricas Adotadas")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    dias_trabalhados = st.number_input(
+        "Dias Trabalhados", 
+        min_value=0, 
+        value=22,  # padrão
+        step=1
+    )
+with col2:
+    horas_trabalhadas_dia = st.number_input(
+        "Horas Trabalhadas por Dia", 
+        min_value=0.0, 
+        value=8.8,  # padrão
+        step=0.1, 
+        format="%.2f"
+    )
+with col3:
+    eficiencia = st.number_input(
+        "Eficiência (%)", 
+        min_value=0, 
+        max_value=100, 
+        value=75,  # padrão
+        step=1
+    )
+
 
 # ===============================
 # Serviços
@@ -242,43 +273,6 @@ with st.expander("🏢 Armazenagem"):
             else:
                 custo_servicos += valores_servicos[nome]
 
-
-# ==============================
-# Cálculos adicionais para Batida
-# ==============================
-if tipo_carga == "Batida":
-    # Demanda em horas
-    demanda_horas = (qtd_containers * tempo_exec) / 60  # de minutos para horas
-    st.info(f"🕒 Demanda estimada: **{demanda_horas:.2f} horas**")
-
-    # Custos de Descarga Batida
-    custo_descarga = {
-        "Conferente": 4052.17,
-        "Analista": 4780.41,
-        "Supervisor": 6775.58,
-        "Mão de Obra Terceiros": 110.00,
-        "Máquina Elétrica": 7376.00,
-        "Stretch": 6.85
-    }
-
-    # Calculando o custo total de Descarga (exemplo: por container)
-    total_descarga = (
-        custo_descarga["Conferente"] +
-        custo_descarga["Analista"] +
-        custo_descarga["Supervisor"] +
-        custo_descarga["Mão de Obra Terceiros"] +
-        custo_descarga["Máquina Elétrica"] +
-        custo_descarga["Stretch"] * qtd_containers  # stretch depende da qtd de containers
-    )
-
-    st.subheader("📊 Custo detalhado Descarga Batida")
-    for k, v in custo_descarga.items():
-        if k == "Stretch":
-            st.write(f"{k}: R$ {v:.2f} x {qtd_containers} containers = R$ {v * qtd_containers:,.2f}")
-        else:
-            st.write(f"{k}: R$ {v:,.2f}")
-
-    st.metric("💰 Custo Total Descarga Batida", f"R$ {total_descarga:,.2f}")
 
 
 # -----------------------------
