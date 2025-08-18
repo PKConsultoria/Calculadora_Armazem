@@ -349,15 +349,6 @@ with st.expander("📥 Recebimento"):
             # TFA
             # -----------------------------
             elif nome == "TFA":
-                # Custo Fixo
-                custo_tfa_fixo = valores_servicos[nome]
-                custo_servicos += custo_tfa_fixo
-                discriminacao.append({
-                    "Serviço": nome,
-                    "Função": "TFA (Custo Fixo)",
-                    "Custo (R$)": custo_tfa_fixo
-                })
-
                 # Custo do Conferente para TFA
                 salario_conferente_tfa = 4052.17
                 tempo_conferente_tfa_min = 120
