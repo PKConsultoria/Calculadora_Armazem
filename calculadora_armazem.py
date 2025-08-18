@@ -163,58 +163,101 @@ with col4:
 # ===============================
 st.header("🛠️ Serviços")
 
+# tempo médio de execução
+tempos_execucao = {"Batida": 120, "Palletizada": 30}
+tempo_exec = tempos_execucao[tipo_carga]
+
+st.info(f"⏱️ Tempo estimado de execução por operação: **{tempo_exec} minutos**")
+
 servicos = {
     "Recebimento": {
-        "Descarga Batida": 100.0,   # por container
-        "Descarga Palletizada": 80.0, # por container
-        "Etiquetagem Batida": 0.50,   # por unidade
-        "Etiquetagem Palletizada": 0.30, # por unidade
-        "TFA": 200.0                 # valor fixo
+        "Descarga Batida": 100.0,
+        "Descarga Palletizada": 80.0,
+        "Etiquetagem Batida": 0.50,
+        "Etiquetagem Palletizada": 0.30,
+        "TFA": 200.0
     },
     "Expedição": {
-        "Separação Batida": 1.20,     # por unidade
-        "Separação Palletizada": 5.0, # por pallet
-        "Carregamento Batido": 90.0,  # por container
-        "Carregamento Palletizado": 70.0, # por container
-        "Etiquetagem Batida": 0.50,   # por unidade
-        "Etiquetagem Palletizada": 0.30  # por unidade
+        "Separação Batida": 1.20,
+        "Separação Palletizada": 5.0,
+        "Carregamento Batido": 90.0,
+        "Carregamento Palletizado": 70.0,
+        "Etiquetagem Batida": 0.50,
+        "Etiquetagem Palletizada": 0.30
     },
     "Armazenagem": {
-        "Diária": 2.0,            # por unidade/dia
-        "Pico Quinzenal": 500.0,  # valor fixo
-        "Pico Mensal": 900.0      # valor fixo
+        "Diária": 2.0,
+        "Pico Quinzenal": 500.0,
+        "Pico Mensal": 900.0
     }
 }
 
-# tempos médios de execução por tipo
-tempos_execucao = {
-    "Batida": 120,       # minutos
-    "Palletizada": 30    # minutos
-}
+st.subheader("Selecione os serviços contratados:")
 
-# função para filtrar serviços por tipo de carga
-def filtrar_servicos(servicos_dict, tipo):
-    filtrados = {}
-    for categoria, itens in servicos_dict.items():
-        for nome, valor in itens.items():
-            # inclui serviços do tipo selecionado + TFA
-            if tipo in nome or nome == "TFA":
-                if categoria not in filtrados:
-                    filtrados[categoria] = {}
-                filtrados[categoria][nome] = valor
-    return filtrados
+servicos_selecionados = []
+custo_servicos = 0.0
 
+# -----------------------------
+# Recebimento
+# -----------------------------
+with st.expander("📥 Recebimento"):
+    for nome, valor in servicos["Recebimento"].items():
+        if tipo_carga == "Batida" and ("Batida" in nome or nome == "TFA"):
+            if st.checkbox(nome, key=f"rec_{nome}"):
+                servicos_selecionados.append(nome)
+                if "Descarga" in nome:
+                    custo_servicos += valor * qtd_containers
+                elif "Etiquetagem" in nome:
+                    custo_servicos += valor * qtd_caixas * qtd_containers
+                elif nome == "TFA":
+                    custo_servicos += valor
 
-# ===============================
-# Serviços (filtrados por tipo de carga)
-# ===============================
-st.header("🛠️ Serviços")
+        if tipo_carga == "Palletizada" and ("Palletizada" in nome or nome == "TFA"):
+            if st.checkbox(nome, key=f"rec_{nome}"):
+                servicos_selecionados.append(nome)
+                if "Descarga" in nome:
+                    custo_servicos += valor * qtd_containers
+                elif "Etiquetagem" in nome:
+                    custo_servicos += valor * qtd_caixas * qtd_containers
+                elif nome == "TFA":
+                    custo_servicos += valor
 
-tempo_padrao = tempos_execucao.get(tipo_carga, 0)
-st.markdown(f"⏱️ Tempo estimado de execução por container: **{tempo_padrao} minutos**")
+# -----------------------------
+# Expedição
+# -----------------------------
+with st.expander("📦 Expedição"):
+    for nome, valor in servicos["Expedição"].items():
+        if tipo_carga == "Batida" and "Batida" in nome:
+            if st.checkbox(nome, key=f"exp_{nome}"):
+                servicos_selecionados.append(nome)
+                if "Separação" in nome or "Etiquetagem" in nome:
+                    custo_servicos += valor * qtd_caixas * qtd_containers
+                elif "Carregamento" in nome:
+                    custo_servicos += valor * qtd_containers
 
-servicos_filtrados = filtrar_servicos(servicos, tipo_carga)
+        if tipo_carga == "Palletizada" and "Palletizada" in nome:
+            if st.checkbox(nome, key=f"exp_{nome}"):
+                servicos_selecionados.append(nome)
+                if "Separação" in nome or "Etiquetagem" in nome:
+                    custo_servicos += valor * qtd_caixas * qtd_containers
+                elif "Carregamento" in nome:
+                    custo_servicos += valor * qtd_containers
 
+# -----------------------------
+# Armazenagem (sempre aparece)
+# -----------------------------
+with st.expander("🏢 Armazenagem"):
+    for nome, valor in servicos["Armazenagem"].items():
+        if st.checkbox(nome, key=f"arm_{nome}"):
+            servicos_selecionados.append(nome)
+            if nome == "Diária":
+                dias = st.number_input("Dias de armazenagem", min_value=1, step=1, value=1)
+                custo_servicos += valor * qtd_caixas * qtd_containers * dias
+            else:
+                custo_servicos += valor
+
+# Mostrar custo total de serviços
+st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
 
 # ===============================
 # Dados financeiros
