@@ -303,50 +303,37 @@ with st.expander("📥 Recebimento"):
                         "Custo (R$)": custo
                     })
 
+            # -----------------------------
+            # Etiquetagem
+            # -----------------------------
+            elif "Etiquetagem" in nome:
+            salario_assistente = 3713.31
+                tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
+                demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
+                headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+                # mesmo padrão: salário x taxa de ocupação x demanda
+                custo_item = salario_assistente * taxa_ocupacao * demanda_horas
 
-# -----------------------------
-# Etiquetagem
-# -----------------------------
-elif "Etiquetagem" in nome:
-    # Lista de funções/subitens
-    funcoes = [
-        {"nome": "Assistente", "salario": 3713.31, "tempo": 1/3600},  # 1 segundo por pallet
-        {"nome": "Etiquetas", "salario": 0.06, "tempo": 0}            # 0,06 por etiqueta
-    ]
+            elif "Etiquetas" in nome:
+                custo_item = 0.06 * qtd_containers * qtd_caixas
+                tempo_horas = 0
+                demanda_horas = 0
+                headcount_val = ""
+                taxa_ocupacao = 0
 
-    for func in funcoes:
-        if func["nome"] == "Assistente":
-            # cálculo normal com tempo
-            tempo_horas = func["tempo"]  # já em horas
-            demanda_horas = tempo_horas * qtd_containers * qtd_caixas
-            headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-            custo = func["salario"] * taxa_ocupacao * demanda_horas
-
-        elif func["nome"] == "Etiquetas":
-            # custo fixo por unidade
-            tempo_horas = 0
-            demanda_horas = 0
-            headcount_val = ""
-            taxa_ocupacao = 0
-            custo = func["salario"] * qtd_containers * qtd_caixas
-
-        # soma no total
-        custo_servicos += custo
-
-        # adiciona no detalhamento
-        discriminacao.append({
-            "Serviço": nome,
-            "Função": func["nome"],
-            "Qtd Containers": qtd_containers,
-            "Qtd Caixas": qtd_caixas,
-            "Tempo/Container (h)": tempo_horas,
-            "Demanda (h)": demanda_horas,
-            "HeadCount (h disponível)": headcount_val,
-            "Taxa Ocupação": taxa_ocupacao,
-            "Custo (R$)": custo
-        })
-
+                custo_servicos += custo_item
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Função": "Assistente",
+                    "Qtd Containers": qtd_containers,
+                    "Qtd Caixas": qtd_caixas,
+                    "Tempo/Container (h)": tempo_pallet_h,
+                    "Demanda (h)": demanda_horas,
+                    "HeadCount (h disponível)": headcount_val,
+                    "Taxa Ocupação": taxa_ocupacao,
+                    "Custo (R$)": custo_item
+                })
 
             # -----------------------------
             # TFA
