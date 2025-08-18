@@ -391,7 +391,7 @@ if discriminacao:
     st.subheader("📋 Discriminação de Custos - Recebimento")
     df_discriminacao = pd.DataFrame(discriminacao)
     df_discriminacao.index += 1
-    st.dataframe(df_discriminacao.style.format({
+    st.dataframe(df_discriminacao.fillna(0).style.format({
         "Custo (R$)": "R$ {:,.2f}",
         "Tempo/Container (h)": "{:.2f}",
         "Demanda (h)": "{:.2f}",
@@ -400,7 +400,7 @@ if discriminacao:
         "Qtd Containers": "{:.0f}",
         "Qtd Pallets": "{:.0f}",
         "Qtd Caixas/Outros": "{:.0f}"
-    }).fillna("0"))
+    }))
 
 # -----------------------------
 # Expedição
