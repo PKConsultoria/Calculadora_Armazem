@@ -275,8 +275,8 @@ with st.expander("📥 Recebimento"):
                     elif func["nome"] == "Máquina Elétrica":
                         tempo_horas = func["tempo"] / 60
                         demanda_horas = tempo_horas * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = demanda_horas / headcount_val
+                        headcount_val = ""
+                        taxa_ocupacao = ""
                         custo = func["salario"] * tempo_horas * qtd_containers
                     else:  # Conferente, Analista, Supervisor
                         tempo_horas = func["tempo"] / 60
