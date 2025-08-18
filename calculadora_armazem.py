@@ -241,8 +241,28 @@ with st.expander("📥 Recebimento"):
     for nome in servicos["Recebimento"][tipo_carga]:
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
+            
+            # -----------------------------
+            # Cálculo da Descarga (automático)
+            # -----------------------------
             if "Descarga" in nome:
-                custo_servicos += valores_servicos[nome] * qtd_containers
+                salario_conferente = 4186.13
+                # Tempo por container em horas
+                tempo_por_container_horas = tempo_exec / 60
+                # Demanda em horas
+                demanda_horas = tempo_por_container_horas * qtd_containers
+                # HeadCount disponível
+                headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                # Total horas disponibilizadas (1 HeadCount)
+                total_horas_disponibilizadas = headcount
+                # Taxa de ocupação
+                taxa_ocupacao = demanda_horas / total_horas_disponibilizadas
+                # Custo descarga
+                custo_descarga_operacao = salario_conferente * taxa_ocupacao
+                
+                # Somar ao custo total de serviços
+                custo_servicos += custo_descarga_operacao
+
             elif "Etiquetagem" in nome:
                 custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
             elif nome == "TFA":
