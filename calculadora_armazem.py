@@ -317,7 +317,7 @@ with st.expander("📥 Recebimento"):
                 tempo_pallet_h = 1 / 3600
                 salario_assistente = 3713.31
                 tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
-                demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
+                demanda_horas = tempo_pallet_h * qtd_containers * qtd_pallets
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
                 custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
