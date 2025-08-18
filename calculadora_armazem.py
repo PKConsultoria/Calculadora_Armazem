@@ -305,10 +305,10 @@ with st.expander("📥 Recebimento"):
                         "Qtd Containers": qtd_containers,
                         "Qtd Pallets": qtd_pallets,
                         "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": round(func["tempo"] / 60, 2) if func["tempo"] > 0 else 0,
-                        "Demanda (h)": round(tempo_horas_total, 2) if tempo_horas_total > 0 else 0,
-                        "HeadCount (h disponível)": round(headcount_val, 2) if 'headcount_val' in locals() and headcount_val > 0 else 0,
-                        "Taxa Ocupação": round(taxa_ocupacao, 2) if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0,
+                        "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
+                        "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 else 0,
+                        "HeadCount (h disponível)": headcount_val if 'headcount_val' in locals() and headcount_val > 0 else 0,
+                        "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0,
                         "Custo (R$)": custo
                     })
 
@@ -333,10 +333,10 @@ with st.expander("📥 Recebimento"):
                     "Qtd Containers": qtd_containers,
                     "Qtd Pallets": qtd_pallets,
                     "Qtd Caixas/Outros": qtd_caixas_outros,
-                    "Tempo/Container (h)": round(tempo_por_unidade_h, 4),
-                    "Demanda (h)": round(demanda_horas, 2),
-                    "HeadCount (h disponível)": round(headcount_val, 2),
-                    "Taxa Ocupação": round(taxa_ocupacao, 2),
+                    "Tempo/Container (h)": tempo_por_unidade_h,
+                    "Demanda (h)": demanda_horas,
+                    "HeadCount (h disponível)": headcount_val,
+                    "Taxa Ocupação": taxa_ocupacao,
                     "Custo (R$)": custo_assistente
                 })
 
@@ -377,10 +377,10 @@ with st.expander("📥 Recebimento"):
                     "Qtd Containers": qtd_containers,
                     "Qtd Pallets": qtd_pallets,
                     "Qtd Caixas/Outros": qtd_caixas_outros,
-                    "Tempo/Container (h)": round(tempo_conferente_tfa_h, 2),
-                    "Demanda (h)": round(demanda_horas_tfa, 2),
-                    "HeadCount (h disponível)": round(headcount_tfa_val, 2),
-                    "Taxa Ocupação": round(taxa_ocupacao_tfa, 2),
+                    "Tempo/Container (h)": tempo_conferente_tfa_h,
+                    "Demanda (h)": demanda_horas_tfa,
+                    "HeadCount (h disponível)": headcount_tfa_val,
+                    "Taxa Ocupação": taxa_ocupacao_tfa,
                     "Custo (R$)": custo_conferente_tfa
                 })
 
@@ -393,10 +393,10 @@ if discriminacao:
     df_discriminacao.index += 1
     st.dataframe(df_discriminacao.fillna(0).style.format({
         "Custo (R$)": "R$ {:,.2f}",
-        "Tempo/Container (h)": "{:.2f}",
-        "Demanda (h)": "{:.2f}",
-        "HeadCount (h disponível)": "{:.2f}",
-        "Taxa Ocupação": "{:.2f}",
+        "Tempo/Container (h)": "{:.4f}",
+        "Demanda (h)": "{:.4f}",
+        "HeadCount (h disponível)": "{:.4f}",
+        "Taxa Ocupação": "{:.4f}",
         "Qtd Containers": "{:.0f}",
         "Qtd Pallets": "{:.0f}",
         "Qtd Caixas/Outros": "{:.0f}"
