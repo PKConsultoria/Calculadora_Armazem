@@ -349,11 +349,35 @@ with st.expander("📥 Recebimento"):
             # TFA
             # -----------------------------
             elif nome == "TFA":
-                custo_servicos += valores_servicos[nome]
+                # Custo Fixo
+                custo_tfa_fixo = valores_servicos[nome]
+                custo_servicos += custo_tfa_fixo
                 discriminacao.append({
                     "Serviço": nome,
-                    "Função": "TFA",
-                    "Custo (R$)": valores_servicos[nome]
+                    "Função": "TFA (Custo Fixo)",
+                    "Custo (R$)": custo_tfa_fixo
+                })
+
+                # Custo do Conferente para TFA
+                salario_conferente_tfa = 4052.17
+                tempo_conferente_tfa_min = 120
+                tempo_conferente_tfa_h = tempo_conferente_tfa_min / 60
+                demanda_horas_tfa = tempo_conferente_tfa_h * qtd_containers
+                headcount_tfa_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                taxa_ocupacao_tfa = (demanda_horas_tfa / headcount_tfa_val) if headcount_tfa_val else 0
+                custo_conferente_tfa = salario_conferente_tfa * taxa_ocupacao_tfa
+
+                custo_servicos += custo_conferente_tfa
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Função": "Conferente",
+                    "Qtd Containers": qtd_containers,
+                    "Qtd Caixas": "",
+                    "Tempo/Container (h)": tempo_conferente_tfa_h,
+                    "Demanda (h)": demanda_horas_tfa,
+                    "HeadCount (h disponível)": headcount_tfa_val,
+                    "Taxa Ocupacao": taxa_ocupacao_tfa,
+                    "Custo (R$)": custo_conferente_tfa
                 })
 
 
