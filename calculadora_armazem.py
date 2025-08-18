@@ -338,16 +338,16 @@ elif "Etiquetagem" in nome:
         })
 
 
-            # -----------------------------
-            # TFA
-            # -----------------------------
-            elif nome == "TFA":
-                custo_servicos += valores_servicos[nome]
-                discriminacao.append({
-                    "Serviço": nome,
-                    "Função": "TFA",
-                    "Custo (R$)": valores_servicos[nome]
-                })
+# -----------------------------
+# TFA
+# -----------------------------
+elif nome == "TFA":
+    custo_servicos += valores_servicos[nome]
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "TFA",
+        "Custo (R$)": valores_servicos[nome]
+    })
 
 
 # -----------------------------
