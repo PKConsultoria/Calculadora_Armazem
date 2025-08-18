@@ -168,14 +168,14 @@ with col1:
     dias_trabalhados = st.number_input(
         "Dias Trabalhados", 
         min_value=0, 
-        value=22,  # padrão
+        value=22, 
         step=1
     )
 with col2:
     horas_trabalhadas_dia = st.number_input(
         "Horas Trabalhadas por Dia", 
         min_value=0.0, 
-        value=8.8,  # padrão
+        value=8.8, 
         step=0.1, 
         format="%.2f"
     )
@@ -184,7 +184,7 @@ with col3:
         "Eficiência (%)", 
         min_value=0, 
         max_value=100, 
-        value=75,  # padrão
+        value=75, 
         step=1
     )
 
@@ -233,6 +233,7 @@ st.subheader("Selecione os serviços contratados:")
 
 servicos_selecionados = []
 custo_servicos = 0.0
+movimentacao = 0 # Variável para contar a movimentação (recebimento e expedição)
 
 discriminacao = []
 
@@ -243,6 +244,7 @@ with st.expander("📥 Recebimento"):
     for nome in servicos["Recebimento"][tipo_carga]:
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
+            movimentacao += 1
 
             # -----------------------------
             # Descarga
@@ -277,7 +279,7 @@ with st.expander("📥 Recebimento"):
 
                     elif func["nome"] == "Máquina Elétrica":
                         # Mesmo padrão: salário x taxa de ocupação x demanda
-                        tempo_horas = func["tempo"] / 60  # 120 min -> 2 h por container
+                        tempo_horas = func["tempo"] / 60 
                         demanda_horas = tempo_horas * qtd_containers
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
@@ -356,6 +358,7 @@ with st.expander("📦 Expedição"):
     for nome in servicos["Expedição"][tipo_carga]:
         if st.checkbox(nome, key=f"exp_{nome}"):
             servicos_selecionados.append(nome)
+            movimentacao += 1
             if "Separação" in nome or "Etiquetagem" in nome:
                 custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
             elif "Carregamento" in nome:
@@ -374,10 +377,15 @@ with st.expander("🏢 Armazenagem"):
             else:
                 custo_servicos += valores_servicos[nome]
 
-
+# -----------------------------
+# Adicionar Custo da Etiqueta
+# -----------------------------
+custo_etiqueta_unitario = 0.06
+custo_etiquetas = custo_etiqueta_unitario * movimentacao * qtd_caixas * qtd_containers
+custo_servicos += custo_etiquetas
+st.metric("💰 Custo com Etiquetas", f"R$ {custo_etiquetas:,.2f}")
 
 # -----------------------------
 # Custo total
 # -----------------------------
 st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
-
