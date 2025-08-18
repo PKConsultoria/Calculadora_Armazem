@@ -247,7 +247,7 @@ with st.expander("📥 Recebimento"):
             if "Descarga" in nome:
                 # Lista de funções/subitens
                 funcoes = [
-                    {"nome": "Conferente", "salario": 4186.13, "tempo": 120},
+                    {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
                     {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
                     {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
@@ -263,11 +263,11 @@ with st.expander("📥 Recebimento"):
                         taxa_ocupacao = 0
                         headcount_val = ""
                     elif func["nome"] == "Mão de Obra de Terceiros":
-                        tempo_horas = func["tempo"] / 60
-                        demanda_horas = tempo_horas * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = demanda_horas / headcount_val
-                        custo = func["salario"] * taxa_ocupacao
+                        custo = 330 * qtd_containers
+                        tempo_horas = 0
+                        demanda_horas = 0
+                        headcount_val = ""
+                        taxa_ocupacao = 0
                     elif func["nome"] == "Máquina Elétrica":
                         tempo_horas = func["tempo"] / 60
                         demanda_horas = tempo_horas * qtd_containers
