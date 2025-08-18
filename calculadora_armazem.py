@@ -314,6 +314,7 @@ with st.expander("📥 Recebimento"):
                 unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
                 # Custo do Assistente de Etiquetagem
+                tempo_pallet_h = 1 / 3600
                 salario_assistente = 3713.31
                 tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
                 demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
