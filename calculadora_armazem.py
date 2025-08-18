@@ -135,7 +135,7 @@ produto = st.selectbox("Tipo de Produto", produto_opcoes)
 valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
 embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
 
-# --- Atualizando a variável 'qtd_caixas' com base na embalagem ---
+# --- Definindo as quantidades de pallets e caixas/outros fora dos if/elifs ---
 qtd_caixas_outros = 0
 if embalagem == "Caixaria":
     qtd_caixas_outros = st.number_input("Quantidade de Caixas por Container", min_value=1, step=1)
@@ -243,14 +243,8 @@ custo_servicos = 0.0
 discriminacao = []
 
 # Variáveis para a nova tabela
-qtd_pallets_tab = 0
-qtd_caixas_outros_tab = 0
-
-if embalagem == "Palletizada":
-    qtd_pallets_tab = qtd_pallets
-else:
-    qtd_caixas_outros_tab = qtd_caixas_outros
-
+qtd_pallets_tab = qtd_pallets
+qtd_caixas_outros_tab = qtd_caixas_outros
 
 # -----------------------------
 # Recebimento
@@ -275,7 +269,7 @@ with st.expander("📥 Recebimento"):
                 
                 for func in funcoes:
                     if func["nome"] == "Stretch":
-                        custo = func["salario"] * qtd_pallets_tab * qtd_containers # Custo per item
+                        custo = func["salario"] * qtd_pallets_tab * qtd_containers
                         tempo_horas = 0
                         demanda_horas = 0
                         taxa_ocupacao = 0
@@ -298,8 +292,8 @@ with st.expander("📥 Recebimento"):
                         "Serviço": nome,
                         "Função": func["nome"],
                         "Qtd Containers": qtd_containers,
-                        "Qtd Pallets": qtd_pallets_tab, # Nova coluna
-                        "Qtd Caixas/Outros": qtd_caixas_outros_tab, # Nova coluna
+                        "Qtd Pallets": qtd_pallets_tab,
+                        "Qtd Caixas/Outros": qtd_caixas_outros_tab,
                         "Tempo/Container (h)": tempo_horas,
                         "Demanda (h)": demanda_horas,
                         "HeadCount (h disponível)": headcount_val,
