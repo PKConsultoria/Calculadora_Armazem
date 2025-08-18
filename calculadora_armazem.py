@@ -234,6 +234,8 @@ st.subheader("Selecione os serviços contratados:")
 servicos_selecionados = []
 custo_servicos = 0.0
 
+discriminacao = []
+
 # -----------------------------
 # Recebimento
 # -----------------------------
@@ -285,8 +287,6 @@ with st.expander("📥 Recebimento"):
                     "Serviço": nome,
                     "Custo (R$)": valores_servicos[nome]
                 })
-
-discriminacao = []
 
 # -----------------------------
 # Mostrar discriminação
