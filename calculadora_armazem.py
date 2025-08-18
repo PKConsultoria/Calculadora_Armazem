@@ -273,6 +273,8 @@ with st.expander("📥 Recebimento"):
                     tempo_horas_total = 0
                     custo = 0
                     
+                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                    
                     if func["nome"] == "Stretch":
                         # Custo total de stretch (por pallet)
                         custo = func["salario"] * qtd_pallets * qtd_containers
@@ -280,14 +282,15 @@ with st.expander("📥 Recebimento"):
                         # Custo por container
                         custo = func["salario"] * qtd_containers
                     elif func["nome"] == "Máquina Elétrica":
-                        # Novo cálculo: salário/h * tempo total de operação
-                        tempo_total_operacao = func["tempo"] / 60 * qtd_containers
-                        custo = func["salario"] * tempo_total_operacao
+                        # Novo cálculo: salário * taxa de ocupação
+                        tempo_total_operacao = (func["tempo"] / 60) * qtd_containers
+                        taxa_ocupacao_maquina = (tempo_total_operacao / headcount_val) if headcount_val > 0 else 0
+                        custo = func["salario"] * taxa_ocupacao_maquina
                         tempo_horas_total = tempo_total_operacao
+                        taxa_ocupacao = taxa_ocupacao_maquina
                     else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_por_container_h = func["tempo"] / 60
                         tempo_horas_total = tempo_por_container_h * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
                         custo = func["salario"] * taxa_ocupacao
 
@@ -300,7 +303,7 @@ with st.expander("📥 Recebimento"):
                         "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
                         "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 else 0,
-                        "HeadCount (h disponível)": headcount_val if 'headcount_val' in locals() and headcount_val > 0 else 0,
+                        "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0,
                         "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0,
                         "Custo (R$)": custo
                     })
