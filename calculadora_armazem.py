@@ -244,78 +244,73 @@ with st.expander("📥 Recebimento"):
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
 
-            # -----------------------------
-            # Descarga
-            # -----------------------------
-            if "Descarga" in nome:
-                # Lista de funções/subitens
-                funcoes = [
-                    {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
-                    {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                    {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
-                    {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                    {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
-                    {"nome": "Stretch", "salario": 6.85, "tempo": 0}
-                ]
+# -----------------------------
+# Descarga
+# -----------------------------
+elif "Descarga" in nome:
+    funcoes = [
+        {"nome": "Conferente", "salario": 4186.13, "tempo": 20},
+        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+        {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
+        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 0},  # 330 por container
+        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},       # R$/h
+        {"nome": "Stretch", "salario": 6.85, "tempo": 0}                   # 6,85 por caixa
+    ]
 
-                for func in funcoes:
-                    if func["nome"] == "Stretch":
-                        # Stretch = R$ 6,85 * qtd_caixas * qtd_containers (independente do tempo)
-                        custo = 6.85 * qtd_caixas * qtd_containers
-                        tempo_horas = 0
-                        demanda_horas = 0
-                        taxa_ocupacao = 0
-                        headcount_val = ""
+    for func in funcoes:
+        if func["nome"] == "Mão de Obra de Terceiros":
+            tempo_horas = 0
+            demanda_horas = 0
+            headcount_val = ""
+            taxa_ocupacao = ""
+            custo = func["salario"] * qtd_containers
 
-                    elif func["nome"] == "Mão de Obra de Terceiros":
-                        # Custo fixo por container, sem headcount/tempo
-                        custo = 330 * qtd_containers
-                        tempo_horas = 0
-                        demanda_horas = 0
-                        headcount_val = ""
-                        taxa_ocupacao = 0
+        elif func["nome"] == "Máquina Elétrica":
+            tempo_horas = func["tempo"] / 60  # 120 min = 2h
+            demanda_horas = tempo_horas * qtd_containers
+            headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+            custo = func["salario"] * taxa_ocupacao * demanda_horas
 
-                    elif func["nome"] == "Máquina Elétrica":
-                        # Mesmo padrão: salário x taxa de ocupação x demanda
-                        tempo_horas = func["tempo"] / 60  # 120 min -> 2 h por container
-                        demanda_horas = tempo_horas * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                        custo = func["salario"] * taxa_ocupacao * demanda_horas
+        elif func["nome"] == "Stretch":
+            tempo_horas = 0
+            demanda_horas = 0
+            headcount_val = ""
+            taxa_ocupacao = ""
+            custo = func["salario"] * qtd_caixas * qtd_containers
 
-                    else:  # Conferente, Analista, Supervisor
-                        tempo_horas = func["tempo"] / 60
-                        demanda_horas = tempo_horas * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                        custo = func["salario"] * taxa_ocupacao
+        else:
+            tempo_horas = func["tempo"] / 60
+            demanda_horas = tempo_horas * qtd_containers
+            headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+            custo = func["salario"] * taxa_ocupacao * demanda_horas
 
-                    custo_servicos += custo
-                    discriminacao.append({
-                        "Serviço": nome,
-                        "Função": func["nome"],
-                        "Qtd Containers": qtd_containers,
-                        "Qtd Caixas": qtd_caixas if func["nome"] == "Stretch" else "",
-                        "Tempo/Container (h)": tempo_horas,
-                        "Demanda (h)": demanda_horas,
-                        "HeadCount (h disponível)": headcount_val,
-                        "Taxa Ocupação": taxa_ocupacao,
-                        "Custo (R$)": custo
-                    })
+        custo_servicos += custo
+        discriminacao.append({
+            "Serviço": nome,
+            "Função": func["nome"],
+            "Qtd Containers": qtd_containers,
+            "Qtd Caixas": qtd_caixas,
+            "Tempo/Container (h)": tempo_horas,
+            "Demanda (h)": demanda_horas,
+            "HeadCount (h disponível)": headcount_val,
+            "Taxa Ocupação": taxa_ocupacao,
+            "Custo (R$)": custo
+        })
+
 
 # -----------------------------
 # Etiquetagem
 # -----------------------------
 elif "Etiquetagem" in nome:
-    # Lista de funções/subitens
     funcoes = [
-        {"nome": "Assistente", "salario": 3713.31, "tempo": 1/3600},  # 1 segundo por pallet
-        {"nome": "Etiquetas", "salario": 0.06, "tempo": 0}            # 0,06 por etiqueta
+        {"nome": "Assistente", "salario": 3713.31, "tempo": 1/3600},  # 1 seg/pallet
+        {"nome": "Etiquetas", "salario": 0.06, "tempo": 0}            # R$ 0,06 por etiqueta
     ]
 
     for func in funcoes:
         if func["nome"] == "Assistente":
-            # cálculo normal com tempo
             tempo_horas = func["tempo"]  # já em horas
             demanda_horas = tempo_horas * qtd_containers * qtd_caixas
             headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
@@ -323,17 +318,13 @@ elif "Etiquetagem" in nome:
             custo = func["salario"] * taxa_ocupacao * demanda_horas
 
         elif func["nome"] == "Etiquetas":
-            # custo fixo por unidade
             tempo_horas = 0
             demanda_horas = 0
             headcount_val = ""
             taxa_ocupacao = 0
             custo = func["salario"] * qtd_containers * qtd_caixas
 
-        # soma no total
         custo_servicos += custo
-
-        # adiciona no detalhamento
         discriminacao.append({
             "Serviço": nome,
             "Função": func["nome"],
