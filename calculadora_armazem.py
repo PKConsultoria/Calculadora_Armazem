@@ -233,7 +233,6 @@ st.subheader("Selecione os serviços contratados:")
 
 servicos_selecionados = []
 custo_servicos = 0.0
-movimentacao = 0 # Variável para contar a movimentação (recebimento e expedição)
 
 discriminacao = []
 
@@ -244,7 +243,6 @@ with st.expander("📥 Recebimento"):
     for nome in servicos["Recebimento"][tipo_carga]:
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
-            movimentacao += 1
 
             # -----------------------------
             # Descarga
@@ -306,18 +304,18 @@ with st.expander("📥 Recebimento"):
                     })
 
             # -----------------------------
-            # Etiquetagem
+            # Etiquetagem e Custo de Etiqueta
             # -----------------------------
             elif "Etiquetagem" in nome:
+                # Custo do Assistente de Etiquetagem
                 salario_assistente = 3713.31
                 tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
                 demanda_horas = tempo_pallet_h * qtd_containers * qtd_caixas
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                # mesmo padrão: salário x taxa de ocupação x demanda
-                custo_item = salario_assistente * taxa_ocupacao * demanda_horas
+                custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
 
-                custo_servicos += custo_item
+                custo_servicos += custo_assistente
                 discriminacao.append({
                     "Serviço": nome,
                     "Função": "Assistente",
@@ -327,7 +325,24 @@ with st.expander("📥 Recebimento"):
                     "Demanda (h)": demanda_horas,
                     "HeadCount (h disponível)": headcount_val,
                     "Taxa Ocupação": taxa_ocupacao,
-                    "Custo (R$)": custo_item
+                    "Custo (R$)": custo_assistente
+                })
+
+                # Custo da Etiqueta
+                custo_etiqueta_unitario = 0.06
+                custo_etiquetas = custo_etiqueta_unitario * qtd_caixas * qtd_containers
+                custo_servicos += custo_etiquetas
+                
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Função": "Etiqueta",
+                    "Qtd Containers": qtd_containers,
+                    "Qtd Caixas": qtd_caixas,
+                    "Tempo/Container (h)": "",
+                    "Demanda (h)": "",
+                    "HeadCount (h disponível)": "",
+                    "Taxa Ocupação": "",
+                    "Custo (R$)": custo_etiquetas
                 })
 
             # -----------------------------
@@ -358,7 +373,6 @@ with st.expander("📦 Expedição"):
     for nome in servicos["Expedição"][tipo_carga]:
         if st.checkbox(nome, key=f"exp_{nome}"):
             servicos_selecionados.append(nome)
-            movimentacao += 1
             if "Separação" in nome or "Etiquetagem" in nome:
                 custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers
             elif "Carregamento" in nome:
@@ -376,14 +390,6 @@ with st.expander("🏢 Armazenagem"):
                 custo_servicos += valores_servicos[nome] * qtd_caixas * qtd_containers * dias
             else:
                 custo_servicos += valores_servicos[nome]
-
-# -----------------------------
-# Adicionar Custo da Etiqueta
-# -----------------------------
-custo_etiqueta_unitario = 0.06
-custo_etiquetas = custo_etiqueta_unitario * movimentacao * qtd_caixas * qtd_containers
-custo_servicos += custo_etiquetas
-st.metric("💰 Custo com Etiquetas", f"R$ {custo_etiquetas:,.2f}")
 
 # -----------------------------
 # Custo total
