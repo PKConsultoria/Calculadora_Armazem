@@ -267,21 +267,30 @@ with st.expander("📥 Recebimento"):
                 ]
                 
                 # Definir a quantidade total de unidades para o cálculo de Descarga
-                unidades_para_calculo = qtd_pallets + qtd_caixas_outros
-
+                # A máquina elétrica, o stretch e a etiquetagem devem se basear
+                # na quantidade total de unidades, ou seja, pallets + caixas
+                unidades_totais = qtd_pallets + qtd_caixas_outros
+                
                 for func in funcoes:
                     tempo_horas_total = 0
                     custo = 0
                     
                     if func["nome"] == "Stretch":
-                        custo = func["salario"] * unidades_para_calculo * qtd_containers
+                        # Custo total de stretch (por pallet)
+                        custo = func["salario"] * qtd_pallets * qtd_containers
                     elif func["nome"] == "Mão de Obra de Terceiros":
+                        # Custo por container
                         custo = func["salario"] * qtd_containers
                     elif func["nome"] == "Máquina Elétrica":
-                        # Novo cálculo: tempo por unidade * total de unidades * custo por hora da máquina
-                        tempo_por_unidade_h = func["tempo"] / (unidades_para_calculo * 60) if unidades_para_calculo > 0 else 0
-                        tempo_horas_total = tempo_por_unidade_h * qtd_containers * unidades_para_calculo
-                        custo = func["salario"] * tempo_horas_total
+                        # Novo cálculo: tempo por container (120min) / (qtd pallets + caixas) = tempo por unidade
+                        # custo = tempo_total_h * custo_por_hora
+                        if unidades_totais > 0:
+                            tempo_por_unidade_h = (func["tempo"] / 60) / unidades_totais
+                            tempo_horas_total = tempo_por_unidade_h * unidades_totais * qtd_containers
+                            custo_por_hora_maquina = func["salario"] / (22 * 8.8 * 0.75) # Apenas para o cálculo
+                            custo = tempo_horas_total * custo_por_hora_maquina
+                        else:
+                            custo = 0
                     else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_por_container_h = func["tempo"] / 60
                         tempo_horas_total = tempo_por_container_h * qtd_containers
@@ -382,15 +391,16 @@ if discriminacao:
     st.subheader("📋 Discriminação de Custos - Recebimento")
     df_discriminacao = pd.DataFrame(discriminacao)
     df_discriminacao.index += 1
-    df_discriminacao = df_discriminacao.fillna(0)  # Substitui NaN por 0
     st.dataframe(df_discriminacao.style.format({
         "Custo (R$)": "R$ {:,.2f}",
         "Tempo/Container (h)": "{:.2f}",
         "Demanda (h)": "{:.2f}",
         "HeadCount (h disponível)": "{:.2f}",
-        "Taxa Ocupação": "{:.2f}"
-    }))
-
+        "Taxa Ocupação": "{:.2f}",
+        "Qtd Containers": "{:.0f}",
+        "Qtd Pallets": "{:.0f}",
+        "Qtd Caixas/Outros": "{:.0f}"
+    }).fillna("0"))
 
 # -----------------------------
 # Expedição
