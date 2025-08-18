@@ -157,6 +157,40 @@ with col3:
 with col4:
     peso = st.number_input("Peso (kg)", min_value=0.0, step=0.1, format="%.2f")
 
+
+# ===============================
+# Serviços
+# ===============================
+servicos = {
+    "Recebimento": {
+        "Descarga Batida": 100.0,
+        "Descarga Palletizada": 80.0,
+        "Etiquetagem Batida": 0.50,   # por unidade
+        "Etiquetagem Palletizada": 0.30,
+        "TFA": 200.0
+    },
+    "Expedição": {
+        "Separação Batida": 1.20,   # por caixa/saco
+        "Separação Palletizada": 5.0, # por pallet
+        "Carregamento Batido": 90.0,
+        "Carregamento Palletizado": 70.0,
+        "Etiquetagem Batida": 0.50,
+        "Etiquetagem Palletizada": 0.30
+    },
+    "Armazenagem": {
+        "Diária": 2.0,           # por unidade/dia
+        "Pico Quinzenal": 500.0, # valor fixo
+        "Pico Mensal": 900.0
+    }
+}
+
+
+
+
+
+
+
+
 # ===============================
 # Dados financeiros
 # ===============================
