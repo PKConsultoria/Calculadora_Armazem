@@ -282,14 +282,11 @@ with st.expander("📥 Recebimento"):
                         # Custo por container
                         custo = func["salario"] * qtd_containers
                     elif func["nome"] == "Máquina Elétrica":
-                        # Considera todas as unidades da operação (pallets + caixas/outros)
-                        unidades_totais = qtd_pallets + qtd_caixas_outros
-                        tempo_total_operacao = (func["tempo"] / 60) * qtd_containers * unidades_totais  # horas totais
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao_maquina = (tempo_total_operacao / headcount_val) if headcount_val > 0 else 0
-                        custo = func["salario"] * taxa_ocupacao_maquina
-                        tempo_horas_total = tempo_total_operacao
-                        taxa_ocupacao = taxa_ocupacao_maquina
+                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+                        custo = func["salario"] * taxa_ocupacao * demanda_horas
                     else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_por_container_h = func["tempo"] / 60
                         tempo_horas_total = tempo_por_container_h * qtd_containers
