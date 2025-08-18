@@ -244,6 +244,10 @@ with st.expander("📥 Recebimento"):
         if st.checkbox(nome, key=f"rec_{nome}"):
             servicos_selecionados.append(nome)
             
+           # -----------------------------
+            # Descarga
+            # -----------------------------
+
             if "Descarga" in nome:
                 # Lista de funções/subitens
                 funcoes = [
@@ -257,7 +261,7 @@ with st.expander("📥 Recebimento"):
                 
                 for func in funcoes:
                     if func["nome"] == "Stretch":
-                        custo = func["salario"] * qtd_caixas * qtd_containers
+                        custo = func["salario"] * qtd_containers
                         tempo_horas = 0
                         demanda_horas = 0
                         taxa_ocupacao = 0
@@ -273,7 +277,7 @@ with st.expander("📥 Recebimento"):
                         demanda_horas = tempo_horas * qtd_containers
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         taxa_ocupacao = demanda_horas / headcount_val
-                        custo = func["salario"] * tempo_horas * taxa_ocupacao
+                        custo = func["salario"] * tempo_horas * qtd_containers
                     else:  # Conferente, Analista, Supervisor
                         tempo_horas = func["tempo"] / 60
                         demanda_horas = tempo_horas * qtd_containers
