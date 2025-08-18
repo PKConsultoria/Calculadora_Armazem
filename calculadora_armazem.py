@@ -135,7 +135,7 @@ produto = st.selectbox("Tipo de Produto", produto_opcoes)
 valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
 embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
 
-# --- Definindo as quantidades de pallets e caixas/outros fora dos if/elifs ---
+# --- Definindo as quantidades de pallets e caixas/outros ---
 qtd_caixas_outros = 0
 if embalagem == "Caixaria":
     qtd_caixas_outros = st.number_input("Quantidade de Caixas por Container", min_value=1, step=1)
@@ -267,20 +267,32 @@ with st.expander("📥 Recebimento"):
                     {"nome": "Stretch", "salario": 6.85, "tempo": 0}
                 ]
                 
+                # Definir a quantidade de unidades para o cálculo de Descarga
+                unidades_para_calculo = qtd_pallets_tab if tipo_carga == "Palletizada" else qtd_caixas_outros_tab
+
                 for func in funcoes:
                     if func["nome"] == "Stretch":
-                        custo = func["salario"] * qtd_pallets_tab * qtd_containers
+                        # Custo total de stretch
+                        custo = func["salario"] * unidades_para_calculo * qtd_containers
                         tempo_horas = 0
                         demanda_horas = 0
                         taxa_ocupacao = 0
                         headcount_val = ""
                     elif func["nome"] == "Mão de Obra de Terceiros":
+                        # Custo por container
                         custo = func["salario"] * qtd_containers
                         tempo_horas = 0
                         demanda_horas = 0
                         taxa_ocupacao = 0
                         headcount_val = ""
-                    else:
+                    elif func["nome"] == "Máquina Elétrica":
+                        # Custo da máquina por unidade descarregada
+                        custo = func["salario"] * unidades_para_calculo * qtd_containers
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
+                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
+                    else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_horas = func["tempo"] / 60
                         demanda_horas = tempo_horas * qtd_containers
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
@@ -305,10 +317,11 @@ with st.expander("📥 Recebimento"):
             # Etiquetagem e Custo de Etiqueta
             # -----------------------------
             elif "Etiquetagem" in nome:
+                unidades_para_etiquetagem = qtd_pallets_tab if embalagem == "Palletizada" else qtd_caixas_outros_tab
+                
                 # Custo do Assistente de Etiquetagem
                 salario_assistente = 3713.31
-                unidades_para_etiquetagem = qtd_pallets_tab if embalagem == "Palletizada" else qtd_caixas_outros_tab
-                tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
+                tempo_por_unidade_h = 1 / 3600 # 1 segundo por unidade
                 demanda_horas = tempo_por_unidade_h * qtd_containers * unidades_para_etiquetagem
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
@@ -371,7 +384,6 @@ with st.expander("📥 Recebimento"):
                     "Taxa Ocupação": taxa_ocupacao_tfa,
                     "Custo (R$)": custo_conferente_tfa
                 })
-
 
 # -----------------------------
 # Mostrar discriminação
