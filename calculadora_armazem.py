@@ -178,8 +178,7 @@ def filtrar_servicos(servicos_dict, tipo):
     filtrados = {}
     for categoria, itens in servicos_dict.items():
         for nome, valor in itens.items():
-            # inclui serviços do tipo selecionado + TFA + Carregamento correspondente
-            if tipo in nome or nome == "TFA":
+            if tipo in nome or nome == "TFA":  # só serviços do tipo selecionado + TFA
                 if categoria not in filtrados:
                     filtrados[categoria] = {}
                 filtrados[categoria][nome] = valor
