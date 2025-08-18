@@ -267,8 +267,6 @@ with st.expander("📥 Recebimento"):
                 ]
                 
                 # Definir a quantidade total de unidades para o cálculo de Descarga
-                # A máquina elétrica, o stretch e a etiquetagem devem se basear
-                # na quantidade total de unidades, ou seja, pallets + caixas
                 unidades_totais = qtd_pallets + qtd_caixas_outros
                 
                 for func in funcoes:
@@ -282,15 +280,10 @@ with st.expander("📥 Recebimento"):
                         # Custo por container
                         custo = func["salario"] * qtd_containers
                     elif func["nome"] == "Máquina Elétrica":
-                        # Novo cálculo: tempo por container (120min) / (qtd pallets + caixas) = tempo por unidade
-                        # custo = tempo_total_h * custo_por_hora
-                        if unidades_totais > 0:
-                            tempo_por_unidade_h = (func["tempo"] / 60) / unidades_totais
-                            tempo_horas_total = tempo_por_unidade_h * unidades_totais * qtd_containers
-                            custo_por_hora_maquina = func["salario"] / (22 * 8.8 * 0.75) # Apenas para o cálculo
-                            custo = tempo_horas_total * custo_por_hora_maquina
-                        else:
-                            custo = 0
+                        # Novo cálculo: salário/h * tempo total de operação
+                        tempo_total_operacao = func["tempo"] / 60 * qtd_containers
+                        custo = func["salario"] * tempo_total_operacao
+                        tempo_horas_total = tempo_total_operacao
                     else: # Mão de obra (Conferente, Analista, Supervisor)
                         tempo_por_container_h = func["tempo"] / 60
                         tempo_horas_total = tempo_por_container_h * qtd_containers
