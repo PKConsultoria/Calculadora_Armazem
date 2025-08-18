@@ -242,83 +242,47 @@ with st.expander("🏢 Armazenagem"):
             else:
                 custo_servicos += valores_servicos[nome]
 
+
+# ==============================
+# Cálculos adicionais para Batida
+# ==============================
+if tipo_carga == "Batida":
+    # Demanda em horas
+    demanda_horas = (qtd_containers * tempo_exec) / 60  # de minutos para horas
+    st.info(f"🕒 Demanda estimada: **{demanda_horas:.2f} horas**")
+
+    # Custos de Descarga Batida
+    custo_descarga = {
+        "Conferente": 4052.17,
+        "Analista": 4780.41,
+        "Supervisor": 6775.58,
+        "Mão de Obra Terceiros": 110.00,
+        "Máquina Elétrica": 7376.00,
+        "Stretch": 6.85
+    }
+
+    # Calculando o custo total de Descarga (exemplo: por container)
+    total_descarga = (
+        custo_descarga["Conferente"] +
+        custo_descarga["Analista"] +
+        custo_descarga["Supervisor"] +
+        custo_descarga["Mão de Obra Terceiros"] +
+        custo_descarga["Máquina Elétrica"] +
+        custo_descarga["Stretch"] * qtd_containers  # stretch depende da qtd de containers
+    )
+
+    st.subheader("📊 Custo detalhado Descarga Batida")
+    for k, v in custo_descarga.items():
+        if k == "Stretch":
+            st.write(f"{k}: R$ {v:.2f} x {qtd_containers} containers = R$ {v * qtd_containers:,.2f}")
+        else:
+            st.write(f"{k}: R$ {v:,.2f}")
+
+    st.metric("💰 Custo Total Descarga Batida", f"R$ {total_descarga:,.2f}")
+
+
 # -----------------------------
 # Custo total
 # -----------------------------
 st.metric("💰 Custo Total Serviços", f"R$ {custo_servicos:,.2f}")
 
-
-# ===============================
-# Dados financeiros
-# ===============================
-st.header("📑 Dados Financeiros")
-
-receita = st.number_input("Receita Bruta (R$)", min_value=0.0, step=100.0, format="%.2f")
-custos_fixos = st.number_input("Custos Fixos (R$)", min_value=0.0, step=100.0, format="%.2f")
-custos_variaveis = st.number_input("Custos Variáveis (R$)", min_value=0.0, step=100.0, format="%.2f")
-volume = st.number_input("Volume Movimentado (unidades)", min_value=1, step=1)
-
-# ===============================
-# Cálculos 🧮
-# ===============================
-lucro_bruto = receita - custos_variaveis
-lucro_liquido = lucro_bruto - custos_fixos
-margem = (lucro_liquido / receita * 100) if receita > 0 else 0
-custo_unitario = (custos_fixos + custos_variaveis) / volume
-peso_total_t = qtd_containers * peso_por_container
-valor_medio_por_ton = (valor_carga / peso_total_t) if peso_total_t > 0 else 0.0
-
-# ===============================
-# Resultados
-# ===============================
-st.subheader("📊 Resultados")
-
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Lucro Bruto", f"R$ {lucro_bruto:,.2f}")
-    st.metric("Margem de Lucro", f"{margem:.2f}%")
-    st.metric("Custo por Unidade", f"R$ {custo_unitario:,.2f}")
-with col2:
-    st.metric("Lucro Líquido", f"R$ {lucro_liquido:,.2f}")
-    st.metric("Peso Total (t)", f"{peso_total_t:,.2f}")
-    st.metric("R$/ton (médio)", f"R$ {valor_medio_por_ton:,.2f}")
-
-# Gráfico (Receita x Custos)
-st.subheader("📈 Comparativo Receita x Custos")
-fig, ax = plt.subplots()
-ax.bar(["Receita", "Custos Fixos", "Custos Variáveis"], [receita, custos_fixos, custos_variaveis])
-ax.set_ylabel("R$")
-st.pyplot(fig)
-
-# ===============================
-# Exportar resultados
-# ===============================
-dados = {
-    "Armazém": [armazem],
-    "Cliente": [cliente],
-    "Vendedor": [vendedor],
-    "Tipo de Carga": [tipo_carga],
-    "Qtd Containers": [qtd_containers],
-    "Peso por Container (t)": [peso_por_container],
-    "Peso Total (t)": [peso_total_t],
-    "Tipo de Produto": [produto],
-    "Valor da Carga (R$)": [valor_carga],
-    "Embalagem": [embalagem],
-    "Receita Bruta (R$)": [receita],
-    "Custos Fixos (R$)": [custos_fixos],
-    "Custos Variáveis (R$)": [custos_variaveis],
-    "Lucro Bruto (R$)": [lucro_bruto],
-    "Lucro Líquido (R$)": [lucro_liquido],
-    "Margem (%)": [margem],
-    "Custo por Unidade (R$)": [custo_unitario],
-    "R$/ton (médio)": [valor_medio_por_ton],
-}
-
-df = pd.DataFrame(dados)
-
-st.download_button(
-    label="📥 Baixar resultados em CSV",
-    data=df.to_csv(index=False).encode("utf-8"),
-    file_name="resultados_armazem.csv",
-    mime="text/csv"
-)
