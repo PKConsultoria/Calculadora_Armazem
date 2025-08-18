@@ -245,35 +245,69 @@ with st.expander("📥 Recebimento"):
             servicos_selecionados.append(nome)
             
             if "Descarga" in nome:
-                # Lista de funções
-                funcoes = [
-                    {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
-                    {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                    {"nome": "Supervisor", "salario": 6775.58, "tempo": 45}
-                ]
-                
-                for func in funcoes:
-                    tempo_horas = func["tempo"] / 60
-                    demanda_horas = tempo_horas * qtd_containers
-                    headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    total_horas_disponibilizadas = headcount
-                    taxa_ocupacao = demanda_horas / total_horas_disponibilizadas
-                    custo = func["salario"] * taxa_ocupacao
-                    
-                    # Somar ao custo total
-                    custo_servicos += custo
-                    
-                    # Adicionar à discriminação
-                    discriminacao.append({
-                        "Serviço": nome,
-                        "Função": func["nome"],
-                        "Qtd Containers": qtd_containers,
-                        "Tempo/Container (h)": tempo_horas,
-                        "Demanda (h)": demanda_horas,
-                        "HeadCount (h disponível)": headcount,
-                        "Taxa Ocupação": taxa_ocupacao,
-                        "Custo (R$)": custo
-                    })
+    # Lista de funções internas (Conferente, Analista, Supervisor)
+    funcoes = [
+        {"nome": "Conferente", "salario": 4186.13, "tempo": 120},
+        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+        {"nome": "Supervisor", "salario": 6775.58, "tempo": 45}
+    ]
+    
+    for func in funcoes:
+        tempo_horas = func["tempo"] / 60
+        demanda_horas = tempo_horas * qtd_containers
+        headcount = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+        total_horas_disponibilizadas = headcount
+        taxa_ocupacao = demanda_horas / total_horas_disponibilizadas
+        custo = func["salario"] * taxa_ocupacao
+        custo_servicos += custo
+        discriminacao.append({
+            "Serviço": nome,
+            "Função": func["nome"],
+            "Qtd Containers": qtd_containers,
+            "Tempo/Container (h)": tempo_horas,
+            "Demanda (h)": demanda_horas,
+            "HeadCount (h disponível)": headcount,
+            "Taxa Ocupação": taxa_ocupacao,
+            "Custo (R$)": custo
+        })
+    
+    # -----------------------------
+    # Mão de Obra de Terceiros
+    # -----------------------------
+    custo_terceiros = 3 * 110 * qtd_containers
+    custo_servicos += custo_terceiros
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "Mão de Obra de Terceiros",
+        "Qtd Containers": qtd_containers,
+        "Custo (R$)": custo_terceiros
+    })
+    
+    # -----------------------------
+    # Máquina Elétrica
+    # -----------------------------
+    custo_maquina = (120/60) * 47.6 * qtd_containers  # 120 min = 2 horas
+    custo_servicos += custo_maquina
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "Máquina Elétrica",
+        "Qtd Containers": qtd_containers,
+        "Tempo (h)": 2,
+        "Custo (R$)": custo_maquina
+    })
+    
+    # -----------------------------
+    # Stretch
+    # -----------------------------
+    custo_stretch = 6.85 * qtd_caixas * qtd_containers
+    custo_servicos += custo_stretch
+    discriminacao.append({
+        "Serviço": nome,
+        "Função": "Stretch",
+        "Qtd Caixas": qtd_caixas,
+        "Qtd Containers": qtd_containers,
+        "Custo (R$)": custo_stretch
+    })
 
             elif "Etiquetagem" in nome:
                 custo_item = valores_servicos[nome] * qtd_caixas * qtd_containers
