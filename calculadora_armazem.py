@@ -27,7 +27,7 @@ st.header("🏗️ Detalhes da Operação")
 tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
 qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
 
-# --- Movendo o campo para sempre aparecer ---
+# --- Campo para quantidade de pallets, agora sempre visível ---
 qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, step=1)
 # --- Fim da alteração de posição ---
 
@@ -136,18 +136,17 @@ valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, 
 embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
 
 # --- Atualizando a variável 'qtd_caixas' com base na embalagem ---
-qtd_caixas = 0
+qtd_caixas_outros = 0
 if embalagem == "Caixaria":
-    qtd_caixas = st.number_input("Quantidade de Caixas por Container", min_value=1, step=1)
-if embalagem == "Sacaria":
-    qtd_caixas = st.number_input("Quantidade de Sacos por Container", min_value=1, step=1)
-if embalagem == "Rolo":
-    qtd_caixas = st.number_input("Quantidade de Rolos por Container", min_value=1, step=1)
-if embalagem == "Fardo":
-    qtd_caixas = st.number_input("Quantidade de Fardos por Container", min_value=1, step=1)
-if embalagem == "Outros":
-    qtd_outros = st.number_input("Quantidade de Outros Produtos", min_value=1, step=1)
-    qtd_caixas = qtd_outros # Usando qtd_caixas como uma variável genérica para a quantidade de itens
+    qtd_caixas_outros = st.number_input("Quantidade de Caixas por Container", min_value=1, step=1)
+elif embalagem == "Sacaria":
+    qtd_caixas_outros = st.number_input("Quantidade de Sacos por Container", min_value=1, step=1)
+elif embalagem == "Rolo":
+    qtd_caixas_outros = st.number_input("Quantidade de Rolos por Container", min_value=1, step=1)
+elif embalagem == "Fardo":
+    qtd_caixas_outros = st.number_input("Quantidade de Fardos por Container", min_value=1, step=1)
+elif embalagem == "Outros":
+    qtd_caixas_outros = st.number_input("Quantidade de Outros Produtos por Container", min_value=1, step=1)
 
 # ===============================
 # Dimensões da Carga
@@ -243,6 +242,16 @@ custo_servicos = 0.0
 
 discriminacao = []
 
+# Variáveis para a nova tabela
+qtd_pallets_tab = 0
+qtd_caixas_outros_tab = 0
+
+if embalagem == "Palletizada":
+    qtd_pallets_tab = qtd_pallets
+else:
+    qtd_caixas_outros_tab = qtd_caixas_outros
+
+
 # -----------------------------
 # Recebimento
 # -----------------------------
@@ -255,7 +264,6 @@ with st.expander("📥 Recebimento"):
             # Descarga
             # -----------------------------
             if "Descarga" in nome:
-                # Lista de funções/subitens
                 funcoes = [
                     {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
@@ -264,39 +272,21 @@ with st.expander("📥 Recebimento"):
                     {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
                     {"nome": "Stretch", "salario": 6.85, "tempo": 0}
                 ]
-
-                # Variável para o cálculo de custo do stretch
-                if embalagem == "Palletizada":
-                    unidades_para_stretch = qtd_pallets
-                else:
-                    unidades_para_stretch = qtd_caixas
-
+                
                 for func in funcoes:
                     if func["nome"] == "Stretch":
-                        # Stretch = R$ 6,85 * qtd_unidades * qtd_containers (independente do tempo)
-                        custo = 6.85 * unidades_para_stretch * qtd_containers
+                        custo = func["salario"] * qtd_pallets_tab * qtd_containers # Custo per item
                         tempo_horas = 0
                         demanda_horas = 0
                         taxa_ocupacao = 0
                         headcount_val = ""
-
                     elif func["nome"] == "Mão de Obra de Terceiros":
-                        # Custo fixo por container, sem headcount/tempo
-                        custo = 330 * qtd_containers
+                        custo = func["salario"] * qtd_containers
                         tempo_horas = 0
                         demanda_horas = 0
-                        headcount_val = ""
                         taxa_ocupacao = 0
-
-                    elif func["nome"] == "Máquina Elétrica":
-                        # Mesmo padrão: salário x taxa de ocupação x demanda
-                        tempo_horas = func["tempo"] / 60 
-                        demanda_horas = tempo_horas * qtd_containers
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                        custo = func["salario"] * taxa_ocupacao * demanda_horas
-
-                    else:  # Conferente, Analista, Supervisor
+                        headcount_val = ""
+                    else:
                         tempo_horas = func["tempo"] / 60
                         demanda_horas = tempo_horas * qtd_containers
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
@@ -308,7 +298,8 @@ with st.expander("📥 Recebimento"):
                         "Serviço": nome,
                         "Função": func["nome"],
                         "Qtd Containers": qtd_containers,
-                        "Qtd Pallets/Caixas": qtd_pallets if embalagem == "Palletizada" else qtd_caixas,
+                        "Qtd Pallets": qtd_pallets_tab, # Nova coluna
+                        "Qtd Caixas/Outros": qtd_caixas_outros_tab, # Nova coluna
                         "Tempo/Container (h)": tempo_horas,
                         "Demanda (h)": demanda_horas,
                         "HeadCount (h disponível)": headcount_val,
@@ -320,27 +311,23 @@ with st.expander("📥 Recebimento"):
             # Etiquetagem e Custo de Etiqueta
             # -----------------------------
             elif "Etiquetagem" in nome:
-                # Variável para o cálculo da etiquetagem
-                if embalagem == "Palletizada":
-                    unidades_para_etiquetagem = qtd_pallets
-                else:
-                    unidades_para_etiquetagem = qtd_caixas
-
                 # Custo do Assistente de Etiquetagem
                 salario_assistente = 3713.31
-                tempo_pallet_h = 1 / 3600  # 1 segundo por pallet
-                demanda_horas = tempo_pallet_h * qtd_containers * unidades_para_etiquetagem
+                unidades_para_etiquetagem = qtd_pallets_tab if embalagem == "Palletizada" else qtd_caixas_outros_tab
+                tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
+                demanda_horas = tempo_por_unidade_h * qtd_containers * unidades_para_etiquetagem
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
+                custo_assistente = salario_assistente * taxa_ocupacao
 
                 custo_servicos += custo_assistente
                 discriminacao.append({
                     "Serviço": nome,
                     "Função": "Assistente",
                     "Qtd Containers": qtd_containers,
-                    "Qtd Pallets/Caixas": unidades_para_etiquetagem,
-                    "Tempo/Container (h)": tempo_pallet_h,
+                    "Qtd Pallets": qtd_pallets_tab,
+                    "Qtd Caixas/Outros": qtd_caixas_outros_tab,
+                    "Tempo/Container (h)": tempo_por_unidade_h,
                     "Demanda (h)": demanda_horas,
                     "HeadCount (h disponível)": headcount_val,
                     "Taxa Ocupação": taxa_ocupacao,
@@ -349,14 +336,15 @@ with st.expander("📥 Recebimento"):
 
                 # Custo da Etiqueta
                 custo_etiqueta_unitario = 0.06
-                custo_etiquetas = custo_etiqueta_unitario * unidades_para_etiquetagem * qtd_containers
+                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * unidades_para_etiquetagem
                 custo_servicos += custo_etiquetas
                 
                 discriminacao.append({
                     "Serviço": nome,
                     "Função": "Etiqueta",
                     "Qtd Containers": qtd_containers,
-                    "Qtd Pallets/Caixas": unidades_para_etiquetagem,
+                    "Qtd Pallets": qtd_pallets_tab,
+                    "Qtd Caixas/Outros": qtd_caixas_outros_tab,
                     "Tempo/Container (h)": "",
                     "Demanda (h)": "",
                     "HeadCount (h disponível)": "",
@@ -368,7 +356,6 @@ with st.expander("📥 Recebimento"):
             # TFA
             # -----------------------------
             elif nome == "TFA":
-                # Custo do Conferente para TFA
                 salario_conferente_tfa = 4052.17
                 tempo_conferente_tfa_min = 120
                 tempo_conferente_tfa_h = tempo_conferente_tfa_min / 60
@@ -382,7 +369,8 @@ with st.expander("📥 Recebimento"):
                     "Serviço": nome,
                     "Função": "Conferente",
                     "Qtd Containers": qtd_containers,
-                    "Qtd Pallets/Caixas": "",
+                    "Qtd Pallets": qtd_pallets_tab,
+                    "Qtd Caixas/Outros": qtd_caixas_outros_tab,
                     "Tempo/Container (h)": tempo_conferente_tfa_h,
                     "Demanda (h)": demanda_horas_tfa,
                     "HeadCount (h disponível)": headcount_tfa_val,
@@ -408,11 +396,7 @@ with st.expander("📦 Expedição"):
         if st.checkbox(nome, key=f"exp_{nome}"):
             servicos_selecionados.append(nome)
             if "Separação" in nome or "Etiquetagem" in nome:
-                # Usar qtd_pallets ou qtd_caixas dependendo do tipo
-                if embalagem == "Palletizada":
-                    unidades_expedicao = qtd_pallets
-                else:
-                    unidades_expedicao = qtd_caixas
+                unidades_expedicao = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
                 custo_servicos += valores_servicos[nome] * unidades_expedicao * qtd_containers
             elif "Carregamento" in nome:
                 custo_servicos += valores_servicos[nome] * qtd_containers
@@ -421,11 +405,7 @@ with st.expander("📦 Expedição"):
 # Armazenagem (sempre aparece)
 # -----------------------------
 with st.expander("🏢 Armazenagem"):
-    # Usar qtd_pallets ou qtd_caixas dependendo do tipo
-    if embalagem == "Palletizada":
-        unidades_armazenagem = qtd_pallets
-    else:
-        unidades_armazenagem = qtd_caixas
+    unidades_armazenagem = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
 
     for nome in servicos["Armazenagem"]:
         if st.checkbox(nome, key=f"arm_{nome}"):
