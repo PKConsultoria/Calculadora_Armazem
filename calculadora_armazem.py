@@ -227,7 +227,7 @@ with st.expander("📥 Recebimento"):
 # -----------------------------
 with st.expander("📦 Expedição"):
     for nome, valor in servicos["Expedição"].items():
-        if (tipo_carga == "Batida" and ("Batida" in nome or "Batido" in nome)) or nome == "TFA
+        if (tipo_carga == "Batida" and ("Batida" in nome or "Batido" in nome)) or nome == "TFA":
             if st.checkbox(nome, key=f"exp_{nome}"):
                 servicos_selecionados.append(nome)
                 if "Separação" in nome:
