@@ -435,9 +435,9 @@ with st.expander("📦 Expedição"):
                 funcoes_carregamento = [
                     {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                    {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
+                    {"nome": "Coordenador", "salario": 6775.58, "tempo": 45},
                     {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                    {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
+                    {"nome": "Máquina GLP", "salario": 50.0, "tempo": 120},
                 ]
 
                 for func in funcoes_carregamento:
@@ -472,10 +472,53 @@ with st.expander("📦 Expedição"):
                         "Custo (R$)": custo
                     })
 
+            # -----------------------------
             # Etiquetagem de Expedição
+            # -----------------------------
             elif "Etiquetagem" in nome:
-                unidades_expedicao = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
-                custo_servicos += valores_servicos[nome] * unidades_expedicao * qtd_containers
+                
+                # Custo do Assistente de Etiquetagem
+                salario_assistente = 3713.31
+                # O tempo será baseado na quantidade de caixas ou pallets.
+                unidades_para_etiquetagem_exp = qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets
+                
+                tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
+                demanda_horas = tempo_por_unidade_h * unidades_para_etiquetagem_exp * qtd_containers
+                headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                custo_assistente = salario_assistente * taxa_ocupacao
+                
+                custo_servicos += custo_assistente
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Função": "Assistente",
+                    "Qtd Containers": qtd_containers,
+                    "Qtd Pallets": qtd_pallets,
+                    "Qtd Caixas/Outros": qtd_caixas_outros,
+                    "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem_exp,
+                    "Demanda (h)": demanda_horas,
+                    "HeadCount (h disponível)": headcount_val,
+                    "Taxa Ocupação": taxa_ocupacao,
+                    "Custo (R$)": custo_assistente
+                })
+
+                # Custo da Etiqueta
+                custo_etiqueta_unitario = 0.06
+                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_caixas_outros
+                custo_servicos += custo_etiquetas
+                
+                discriminacao.append({
+                    "Serviço": nome,
+                    "Função": "Etiqueta",
+                    "Qtd Containers": qtd_containers,
+                    "Qtd Pallets": qtd_pallets,
+                    "Qtd Caixas/Outros": qtd_caixas_outros,
+                    "Tempo/Container (h)": 0,
+                    "Demanda (h)": 0,
+                    "HeadCount (h disponível)": 0,
+                    "Taxa Ocupação": 0,
+                    "Custo (R$)": custo_etiquetas
+                })
 
 # -----------------------------
 # Armazenagem (sempre aparece)
