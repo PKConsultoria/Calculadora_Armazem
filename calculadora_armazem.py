@@ -497,8 +497,8 @@ if servicos_selecionados:
             df_discriminacao.index += 1
             
             df_discriminacao = df_discriminacao[[
-                "Serviço", "Função", "Custo (R$)", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
-                "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação"
+                "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
+                "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)"
             ]]
             
             st.dataframe(df_discriminacao.style.format({
