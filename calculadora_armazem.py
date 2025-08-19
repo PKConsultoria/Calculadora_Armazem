@@ -502,10 +502,10 @@ if servicos_selecionados:
             ]]
             
             st.dataframe(df_discriminacao.style.format({
-                "Custo (R$)": "R$ {:,.2f}",
                 "Demanda (h)": "{:.2f}",
                 "HeadCount (h disponível)": "{:.2f}",
                 "Taxa Ocupação": "{:.2f}",
+                "Custo (R$)": "R$ {:,.2f}",
                 "Qtd Containers": "{:.0f}",
                 "Qtd Pallets": "{:.0f}",
                 "Qtd Caixas/Outros": "{:.0f}"
