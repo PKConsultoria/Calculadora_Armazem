@@ -435,9 +435,9 @@ with st.expander("📦 Expedição"):
                 funcoes_carregamento = [
                     {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                    {"nome": "Coordenador", "salario": 6775.58, "tempo": 45},
+                    {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
                     {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                    {"nome": "Máquina GLP", "salario": 50.0, "tempo": 120},
+                    {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
                 ]
 
                 for func in funcoes_carregamento:
