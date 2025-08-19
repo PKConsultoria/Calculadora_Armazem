@@ -7,7 +7,7 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="
 
 # --- Título principal e subtítulo ---
 st.title("🏭 Calculadora de Receitas e Custos - Armazém")
-st.markdown("Calcule de forma rápida e intuitiva os custos e receitas de uma operação logística.")
+st.markdown("Open Beta V0.1")
 
 # --- Barra Lateral para informações e métricas ---
 with st.sidebar:
@@ -23,7 +23,7 @@ with st.sidebar:
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
     
     st.subheader("💰 Estratégia de Preço")
-    markup_percent = st.slider("Markup (%)", min_value=0, max_value=100, value=20, step=1, format="%d%%")
+    markup_percent = st.slider("Markup (%)", min_value=0, max_value=100, value=20, step=0.5, format="%.1f%%")
     
 
 # --- Container principal para o corpo da aplicação ---
