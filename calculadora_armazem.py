@@ -21,6 +21,11 @@ with st.sidebar:
     dias_trabalhados = st.number_input("Dias Trabalhados", min_value=1, value=22, step=1)
     horas_trabalhadas_dia = st.number_input("Horas Trabalhadas por Dia", min_value=0.0, value=8.8, step=0.1, format="%.2f")
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
+    
+    # --- NOVO CÓDIGO: SLIDER DE MARKUP NA BARRA LATERAL ---
+    st.subheader("💰 Estratégia de Preço")
+    markup_percent = st.slider("Markup (%)", min_value=0, max_value=100, value=20, step=1, format="%d%%")
+    
 
 # --- Container principal para o corpo da aplicação ---
 with st.container(border=True):
@@ -462,9 +467,18 @@ if servicos_selecionados:
     
     col_metricas, col_grafico = st.columns([1, 1.5])
 
+    # --- NOVO CÓDIGO: CÁLCULOS DE RECEITA E LUCRO ---
+    markup_decimal = markup_percent / 100
+    receita_total = custo_servicos * (1 + markup_decimal)
+    lucro_total = receita_total - custo_servicos
+
     with col_metricas:
         st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
-    
+        
+        # --- NOVO CÓDIGO: EXIBIÇÃO DA RECEITA E LUCRO ---
+        st.metric("💲 **Receita Total (com markup)**", f"R$ {receita_total:,.2f}")
+        st.metric("📊 **Lucro Bruto**", f"R$ {lucro_total:,.2f}")
+
         total_containers = qtd_containers
         total_pallets = qtd_containers * qtd_pallets
         total_caixas_outros = qtd_containers * qtd_caixas_outros
