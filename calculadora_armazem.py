@@ -468,6 +468,10 @@ if servicos_selecionados:
         total_containers = qtd_containers
         total_pallets = qtd_containers * qtd_pallets
         total_caixas_outros = qtd_containers * qtd_caixas_outros
+
+        print(f"Total de Containers: {total_containers:,}".replace(",", "."))
+        print(f"Total de Pallets: {total_pallets:,}".replace(",", "."))
+        print(f"Total de Caixas/Outros: {total_caixas_outros:,}".replace(",", "."))
         
         st.markdown("---")
         st.subheader("Totais da Operação")
