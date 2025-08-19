@@ -314,13 +314,12 @@ with st.expander("📥 Recebimento"):
                 unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
                 # Custo do Assistente de Etiquetagem
-                tempo_pallet_h = 1 / 3600
                 salario_assistente = 3713.31
                 tempo_por_unidade_h = 1 / 3600  # 1 segundo por unidade
-                demanda_horas = tempo_pallet_h * qtd_containers * qtd_pallets
+                demanda_horas = tempo_por_unidade_h * qtd_containers * unidades_para_etiquetagem
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
+                custo_assistente = salario_assistente * taxa_ocupacao
 
                 custo_servicos += custo_assistente
                 discriminacao.append({
@@ -329,7 +328,7 @@ with st.expander("📥 Recebimento"):
                     "Qtd Containers": qtd_containers,
                     "Qtd Pallets": qtd_pallets,
                     "Qtd Caixas/Outros": qtd_caixas_outros,
-                    "Tempo/Container (h)": tempo_por_unidade_h,
+                    "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem,
                     "Demanda (h)": demanda_horas,
                     "HeadCount (h disponível)": headcount_val,
                     "Taxa Ocupação": taxa_ocupacao,
@@ -338,7 +337,7 @@ with st.expander("📥 Recebimento"):
 
                 # Custo da Etiqueta
                 custo_etiqueta_unitario = 0.06
-                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_pallets
+                custo_etiquetas = custo_etiqueta_unitario * qtd_containers * unidades_para_etiquetagem
                 custo_servicos += custo_etiquetas
                 
                 discriminacao.append({
@@ -380,23 +379,6 @@ with st.expander("📥 Recebimento"):
                     "Custo (R$)": custo_conferente_tfa
                 })
 
-# -----------------------------
-# Mostrar discriminação
-# -----------------------------
-if discriminacao:
-    st.subheader("📋 Discriminação de Custos - Recebimento")
-    df_discriminacao = pd.DataFrame(discriminacao)
-    df_discriminacao.index += 1
-    st.dataframe(df_discriminacao.fillna(0).style.format({
-        "Custo (R$)": "R$ {:,.2f}",
-        "Tempo/Container (h)": "{:.4f}",
-        "Demanda (h)": "{:.4f}",
-        "HeadCount (h disponível)": "{:.4f}",
-        "Taxa Ocupação": "{:.4f}",
-        "Qtd Containers": "{:.0f}",
-        "Qtd Pallets": "{:.0f}",
-        "Qtd Caixas/Outros": "{:.0f}"
-    }))
 
 # -----------------------------
 # Expedição
@@ -405,7 +387,48 @@ with st.expander("📦 Expedição"):
     for nome in servicos["Expedição"][tipo_carga]:
         if st.checkbox(nome, key=f"exp_{nome}"):
             servicos_selecionados.append(nome)
-            if "Separação" in nome or "Etiquetagem" in nome:
+
+            if "Separação" in nome:
+                funcoes_separacao = [
+                    {"nome": "Conferente", "salario": 4052.17, "tempo": 10}, # 10s
+                    {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 10} # 10s
+                ]
+
+                unidades_demanda = qtd_containers * qtd_caixas_outros
+
+                for func in funcoes_separacao:
+                    custo = 0.0
+                    taxa_ocupacao = 0.0
+                    demanda_horas = 0.0
+                    
+                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+
+                    # Cálculo da demanda em horas e taxa de ocupação
+                    demanda_horas = (func["tempo"] / 3600) * unidades_demanda
+                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                    
+                    # Cálculo do custo
+                    if func["nome"] == "Máquina Elétrica":
+                        custo = func["salario"] * taxa_ocupacao * demanda_horas
+                    else: # Mão de obra
+                        custo = func["salario"] * taxa_ocupacao
+                    
+                    custo_servicos += custo
+                    discriminacao.append({
+                        "Serviço": nome,
+                        "Função": func["nome"],
+                        "Qtd Containers": qtd_containers,
+                        "Qtd Pallets": qtd_pallets,
+                        "Qtd Caixas/Outros": qtd_caixas_outros,
+                        "Tempo/Container (h)": func["tempo"] / 3600,
+                        "Demanda (h)": demanda_horas,
+                        "HeadCount (h disponível)": headcount_val,
+                        "Taxa Ocupação": taxa_ocupacao,
+                        "Custo (R$)": custo
+                    })
+            
+            # Etiquetagem e Carregamento mantêm o cálculo original
+            elif "Etiquetagem" in nome:
                 unidades_expedicao = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
                 custo_servicos += valores_servicos[nome] * unidades_expedicao * qtd_containers
             elif "Carregamento" in nome:
@@ -425,6 +448,24 @@ with st.expander("🏢 Armazenagem"):
                 custo_servicos += valores_servicos[nome] * unidades_armazenagem * qtd_containers * dias
             else:
                 custo_servicos += valores_servicos[nome]
+
+# -----------------------------
+# Mostrar discriminação
+# -----------------------------
+if discriminacao:
+    st.subheader("📋 Discriminação de Custos")
+    df_discriminacao = pd.DataFrame(discriminacao)
+    df_discriminacao.index += 1
+    st.dataframe(df_discriminacao.fillna(0).style.format({
+        "Custo (R$)": "R$ {:,.2f}",
+        "Tempo/Container (h)": "{:.4f}",
+        "Demanda (h)": "{:.4f}",
+        "HeadCount (h disponível)": "{:.4f}",
+        "Taxa Ocupação": "{:.4f}",
+        "Qtd Containers": "{:.0f}",
+        "Qtd Pallets": "{:.0f}",
+        "Qtd Caixas/Outros": "{:.0f}"
+    }))
 
 # -----------------------------
 # Custo total
