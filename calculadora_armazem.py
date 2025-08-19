@@ -23,7 +23,7 @@ with st.sidebar:
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
     
     st.subheader("💰 Estratégia de Preço")
-    markup_percent = st.slider("Markup (%)", min_value=0, max_value=100, value=20, step=0.5, format="%.1f%%")
+    markup_percent = st.slider("Markup (%)", min_value=0, max_value=100.0, value=20.0, step=0.5, format="%.1f%%")
     
 
 # --- Container principal para o corpo da aplicação ---
