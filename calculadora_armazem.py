@@ -472,11 +472,11 @@ if servicos_selecionados:
         st.markdown("---")
         st.subheader("Totais da Operação")
     
-        st.metric("📦 **Total de Containers**", f"{total_containers:,.0f}")
+        st.metric("🧊 **Total de Containers**", f"{total_containers:,.0f}")
         if total_pallets > 0:
             st.metric("🧱 **Total de Pallets**", f"{total_pallets:,.0f}")
         if total_caixas_outros > 0:
-            st.metric(f"📦 **Total de {embalagem}**", f"{total_caixas_outros:,.0f}")
+            st.metric(f"🛍️ **Total de {embalagem}**", f"{total_caixas_outros:,.0f}")
         
 
     with col_grafico:
