@@ -469,9 +469,9 @@ if servicos_selecionados:
         total_pallets = qtd_containers * qtd_pallets
         total_caixas_outros = qtd_containers * qtd_caixas_outros
 
-        print(f"Total de Containers: {total_containers:,}".replace(",", "."))
-        print(f"Total de Pallets: {total_pallets:,}".replace(",", "."))
-        print(f"Total de Caixas/Outros: {total_caixas_outros:,}".replace(",", "."))
+        st.metric("📦 **Total de Containers**", f"{total_containers:,.0f}")
+        st.metric("🧱 **Total de Pallets**", f"{total_pallets:,.0f}")
+        st.metric("📦 **Total de Caixas e Outros**", f"{total_caixas_outros:,.0f}")
         
         st.markdown("---")
         st.subheader("Totais da Operação")
