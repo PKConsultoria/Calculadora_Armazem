@@ -348,7 +348,7 @@ with st.expander("📥 Recebimento"):
                     "Qtd Caixas/Outros": qtd_caixas_outros,
                     "Tempo/Container (h)": 0,
                     "Demanda (h)": 0,
-                    "HeadCount (h disponível)": 0,
+                    "Headcount (h disponível)": 0,
                     "Taxa Ocupação": 0,
                     "Custo (R$)": custo_etiquetas
                 })
