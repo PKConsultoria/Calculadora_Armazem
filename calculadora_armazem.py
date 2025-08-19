@@ -529,10 +529,6 @@ with st.expander("🏢 Armazenagem"):
     for nome in servicos["Armazenagem"]:
         if st.checkbox(nome, key=f"arm_{nome}"):
             servicos_selecionados.append(nome)
-            if nome == "Diária":
-                dias = st.number_input("Dias de armazenagem", min_value=1, step=1, value=1)
-                custo_servicos += valores_servicos[nome] * unidades_armazenagem * qtd_containers * dias
-            else:
                 custo_servicos += valores_servicos[nome]
 
 # -----------------------------
