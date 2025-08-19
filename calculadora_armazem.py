@@ -529,7 +529,7 @@ with st.expander("🏢 Armazenagem"):
     for nome in servicos["Armazenagem"]:
         if st.checkbox(nome, key=f"arm_{nome}"):
             servicos_selecionados.append(nome)
-                custo_servicos += valores_servicos[nome]
+            custo_servicos += valores_servicos[nome]
 
 # -----------------------------
 # Mostrar discriminação
