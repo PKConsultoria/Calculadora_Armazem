@@ -483,7 +483,7 @@ if servicos_selecionados:
         if not df_custos.empty:
             fig, ax = plt.subplots(figsize=(1, 1))
             df_custos_final = df_custos[df_custos['Custo'] > 0]
-            ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90)
+            ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 10})
             ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
             st.pyplot(fig)
         else:
