@@ -9,6 +9,43 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="
 st.title("🏭 Calculadora de Receitas e Custos - Armazém")
 st.markdown("Calcule de forma rápida e intuitiva os custos e receitas de uma operação logística.")
 
+# Dicionários de dados para facilitar a manutenção
+VALORES_SERVICOS = {
+    "Descarga Batida": 100.0, "Descarga Palletizada": 80.0,
+    "Etiquetagem Batida": 0.50, "Etiquetagem Palletizada": 0.30,
+    "TFA": 200.0, "Separação Batida": 1.20,
+    "Separação Palletizada": 5.0, "Carregamento Batido": 90.0,
+    "Carregamento Palletizado": 70.0, "Diária": 2.0,
+    "Pico Quinzenal": 500.0, "Pico Mensal": 900.0
+}
+
+FUNCOES_CUSTOS = {
+    "Descarga": [
+        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
+        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+        {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
+        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
+        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
+        {"nome": "Stretch", "salario": 6.85, "tempo": 0}
+    ],
+    "Etiquetagem": [
+        {"nome": "Assistente", "salario": 3713.31, "tempo": 1 / 3600},
+        {"nome": "Etiqueta", "salario": 0.06, "tempo": 0}
+    ],
+    "TFA": [{"nome": "Conferente", "salario": 4052.17, "tempo": 120}],
+    "Separação": [
+        {"nome": "Conferente", "salario": 4052.17, "tempo": 10},
+        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 10}
+    ],
+    "Carregamento": [
+        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
+        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+        {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
+        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
+        {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
+    ]
+}
+
 # --- Barra Lateral para informações e métricas ---
 with st.sidebar:
     st.header("⚙️ Configurações Gerais")
@@ -22,8 +59,8 @@ with st.sidebar:
     horas_trabalhadas_dia = st.number_input("Horas Trabalhadas por Dia", min_value=0.0, value=8.8, step=0.1, format="%.2f")
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
 
-# --- Container principal para o corpo da aplicação ---
-with st.container(border=True):
+# Usando um formulário para agrupar as entradas e acionar o cálculo com um botão
+with st.form("main_form"):
     st.header("🏗️ Detalhes da Operação")
     
     col1, col2 = st.columns(2)
@@ -35,7 +72,6 @@ with st.container(border=True):
         qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, step=1)
         peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
 
-    # --- Campo para embalagem e quantidade de caixas/outros ---
     embalagem = st.selectbox("Distribuição da Carga", ["Palletizada", "Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"])
     qtd_caixas_outros = 0
     if embalagem in ["Caixaria", "Sacaria", "Rolo", "Fardo", "Outros"]:
@@ -48,11 +84,6 @@ with st.container(border=True):
         }
         qtd_caixas_outros = st.number_input(label_map[embalagem], min_value=0, step=1)
 
-    # Validação para garantir que a soma de pallets e caixas não seja zero.
-    if qtd_containers > 0 and qtd_pallets == 0 and qtd_caixas_outros == 0:
-        st.warning("A soma da quantidade de pallets e caixas/outros por container deve ser maior que 0 para o cálculo.")
-
-    # --- Detalhes adicionais da carga em um expansor ---
     with st.expander("➕ Outros Detalhes da Carga"):
         produto_opcoes = [
             "01 - Animais vivos.", "02 - Carnes e miudezas, comestíveis.", "03 - Peixes e crustáceos, moluscos e outros invertebrados aquáticos.",
@@ -163,331 +194,192 @@ with st.container(border=True):
             altura = st.number_input("Altura (m)", min_value=0.0, step=0.1, format="%.2f")
         with col_dim4:
             peso = st.number_input("Peso (kg)", min_value=0.0, step=0.1, format="%.2f")
-
-
-# --- Container de Serviços ---
-with st.container(border=True):
+    
+    st.markdown("---")
     st.header("🛠️ Serviços")
     
-    # tempo médio de execução
-    tempos_execucao = {"Batida": 120, "Palletizada": 30}
-    tempo_exec = tempos_execucao.get(tipo_carga, 0)
-    st.info(f"⏱️ Tempo estimado de execução por operação: **{tempo_exec} minutos**")
-    
-    # Serviços por tipo de carga
-    servicos = {
-        "Recebimento": {
-            "Batida": ["Descarga Batida", "Etiquetagem Batida", "TFA"],
-            "Palletizada": ["Descarga Palletizada", "Etiquetagem Palletizada", "TFA"]
-        },
-        "Expedição": {
-            "Batida": ["Separação Batida", "Carregamento Batido", "Etiquetagem Batida"],
-            "Palletizada": ["Separação Palletizada", "Carregamento Palletizado", "Etiquetagem Palletizada"]
-        },
-        "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
-    }
-    
-    # Valores de cada serviço
-    valores_servicos = {
-        "Descarga Batida": 100.0,
-        "Descarga Palletizada": 80.0,
-        "Etiquetagem Batida": 0.50,
-        "Etiquetagem Palletizada": 0.30,
-        "TFA": 200.0,
-        "Separação Batida": 1.20,
-        "Separação Palletizada": 5.0,
-        "Carregamento Batido": 90.0,
-        "Carregamento Palletizado": 70.0,
-        "Diária": 2.0,
-        "Pico Quinzenal": 500.0,
-        "Pico Mensal": 900.0
-    }
-    
     servicos_selecionados = []
+    
+    st.info(f"⏱️ Tempo estimado de execução por operação: **{120 if tipo_carga == 'Batida' else 30} minutos**")
+
+    # Checkbox para Recebimento
+    if st.checkbox("📥 Incluir Recebimento"):
+        servicos_selecionados.extend([f"Descarga {tipo_carga}", "Etiquetagem Batida" if tipo_carga == "Batida" else "Etiquetagem Palletizada", "TFA"])
+    
+    # Checkbox para Expedição
+    if st.checkbox("📦 Incluir Expedição"):
+        servicos_selecionados.extend([f"Separação {tipo_carga}", f"Carregamento {tipo_carga}", f"Etiquetagem {tipo_carga}"])
+        
+    # Checkbox para Armazenagem
+    if st.checkbox("🏢 Incluir Armazenagem"):
+        servicos_selecionados.extend(["Diária", "Pico Quinzenal", "Pico Mensal"])
+
+    st.markdown("---")
+    st.header("💰 Receitas")
+    
+    receitas_por_servico = {}
+    for servico in servicos_selecionados:
+        receita_unit = st.number_input(f"Receita por {servico} (R$)", min_value=0.0, step=1.0, format="%.2f", key=f"receita_{servico}")
+        receitas_por_servico[servico] = receita_unit
+    
+    submitted = st.form_submit_button("Calcular Custos e Lucros")
+
+
+if submitted:
+    # Validação
+    if qtd_containers > 0 and qtd_pallets == 0 and qtd_caixas_outros == 0:
+        st.warning("A soma da quantidade de pallets e caixas/outros por container deve ser maior que 0 para o cálculo.")
+        st.stop()
+
+    def calcular_custo(nome_servico, qtd_containers, qtd_pallets, qtd_caixas_outros, dias_trabalhados, horas_trabalhadas_dia, eficiencia):
+        custo_total = 0.0
+        discriminacao_detalhada = []
+        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+        unidades_totais = qtd_pallets if "Palletizada" in nome_servico or "Etiquetagem Palletizada" in nome_servico else qtd_caixas_outros
+
+        if "Descarga" in nome_servico:
+            funcoes = FUNCOES_CUSTOS["Descarga"]
+            for func in funcoes:
+                custo = 0
+                tempo_horas_total = 0
+                taxa_ocupacao = 0
+                
+                if func["nome"] == "Stretch":
+                    custo = func["salario"] * qtd_pallets * qtd_containers
+                elif func["nome"] == "Mão de Obra de Terceiros":
+                    custo = func["salario"] * qtd_containers
+                elif func["nome"] == "Máquina Elétrica":
+                    demanda_horas = (func["tempo"] / 60) * qtd_containers
+                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                    custo = func["salario"] * taxa_ocupacao * demanda_horas
+                else: # Mão de obra (Conferente, Analista, Supervisor)
+                    tempo_horas_total = (func["tempo"] / 60) * qtd_containers
+                    taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
+                    custo = func["salario"] * taxa_ocupacao
+                
+                custo_total += custo
+                discriminacao_detalhada.append({"Serviço": nome_servico, "Função": func["nome"], "Custo (R$)": custo, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": tempo_horas_total, "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao})
+
+        elif "Etiquetagem" in nome_servico:
+            unidades_para_etiquetagem = qtd_pallets * qtd_containers if "Palletizada" in nome_servico else qtd_caixas_outros * qtd_containers
+            
+            # Custo do Assistente de Etiquetagem
+            salario_assistente = FUNCOES_CUSTOS["Etiquetagem"][0]["salario"]
+            tempo_por_unidade_h = 1 / 3600
+            demanda_horas = tempo_por_unidade_h * unidades_para_etiquetagem
+            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+            custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
+            
+            custo_total += custo_assistente
+            discriminacao_detalhada.append({"Serviço": nome_servico, "Função": "Assistente", "Custo (R$)": custo_assistente, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": demanda_horas, "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao})
+
+            # Custo da Etiqueta
+            custo_etiqueta_unitario = FUNCOES_CUSTOS["Etiquetagem"][1]["salario"]
+            custo_etiquetas = custo_etiqueta_unitario * unidades_para_etiquetagem
+            custo_total += custo_etiquetas
+            discriminacao_detalhada.append({"Serviço": nome_servico, "Função": "Etiqueta", "Custo (R$)": custo_etiquetas, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0})
+            
+        elif "TFA" in nome_servico:
+            func = FUNCOES_CUSTOS["TFA"][0]
+            tempo_conferente_tfa_h = func["tempo"] / 60
+            demanda_horas_tfa = tempo_conferente_tfa_h * qtd_containers
+            taxa_ocupacao_tfa = (demanda_horas_tfa / headcount_val) if headcount_val > 0 else 0
+            custo_conferente_tfa = func["salario"] * taxa_ocupacao_tfa
+            custo_total += custo_conferente_tfa
+            discriminacao_detalhada.append({"Serviço": nome_servico, "Função": "Conferente", "Custo (R$)": custo_conferente_tfa, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": demanda_horas_tfa, "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao_tfa})
+
+        elif "Separação" in nome_servico:
+            funcoes = FUNCOES_CUSTOS["Separação"]
+            unidades_demanda = qtd_containers * qtd_caixas_outros
+            for func in funcoes:
+                demanda_horas = (func["tempo"] / 3600) * unidades_demanda
+                taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                custo = func["salario"] * taxa_ocupacao if func["nome"] != "Máquina Elétrica" else func["salario"] * taxa_ocupacao * demanda_horas
+                custo_total += custo
+                discriminacao_detalhada.append({"Serviço": nome_servico, "Função": func["nome"], "Custo (R$)": custo, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": demanda_horas, "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao})
+
+        elif "Carregamento" in nome_servico:
+            funcoes = FUNCOES_CUSTOS["Carregamento"]
+            for func in funcoes:
+                custo = 0
+                tempo_horas_total = 0
+                taxa_ocupacao = 0
+                if func["nome"] == "Mão de Obra de Terceiros":
+                    custo = func["salario"] * qtd_containers
+                elif func["nome"] == "Máquina GLP":
+                    demanda_horas = (func["tempo"] / 60) * qtd_containers
+                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                    custo = func["salario"] * taxa_ocupacao * demanda_horas
+                else: # Mão de obra
+                    tempo_horas_total = (func["tempo"] / 60) * qtd_containers
+                    taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
+                    custo = func["salario"] * taxa_ocupacao
+                custo_total += custo
+                discriminacao_detalhada.append({"Serviço": nome_servico, "Função": func["nome"], "Custo (R$)": custo, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": tempo_horas_total, "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao})
+        else: # Armazenagem
+            custo_total = VALORES_SERVICOS[nome_servico]
+            discriminacao_detalhada.append({"Serviço": nome_servico, "Função": "N/A", "Custo (R$)": custo_total, "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0})
+        
+        return custo_total, discriminacao_detalhada
+    
+    # Executa os cálculos
+    custo_servicos = 0.0
     custos_por_servico = {}
     discriminacao = []
-    custo_servicos = 0.0
-
-    # --- Expansores para cada tipo de serviço ---
-    with st.expander("📥 Recebimento"):
-        for nome in servicos["Recebimento"][tipo_carga]:
-            if st.checkbox(nome, key=f"rec_{nome}"):
-                servicos_selecionados.append(nome)
-                
-                # -----------------------------
-                # Descarga
-                # -----------------------------
-                if "Descarga" in nome:
-                    funcoes = [
-                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
-                        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                        {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
-                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
-                        {"nome": "Stretch", "salario": 6.85, "tempo": 0}
-                    ]
-                    
-                    unidades_totais = qtd_pallets + qtd_caixas_outros
-                    
-                    for func in funcoes:
-                        tempo_horas_total = 0
-                        custo = 0
-                        
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        
-                        if func["nome"] == "Stretch":
-                            custo = func["salario"] * qtd_pallets * qtd_containers
-                        elif func["nome"] == "Mão de Obra de Terceiros":
-                            custo = func["salario"] * qtd_containers
-                        elif func["nome"] == "Máquina Elétrica":
-                            tempo_horas = func["tempo"] / 60
-                            demanda_horas = tempo_horas * qtd_containers
-                            headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val else 0
-                            custo = func["salario"] * taxa_ocupacao * demanda_horas
-                        else: # Mão de obra (Conferente, Analista, Supervisor)
-                            tempo_por_container_h = func["tempo"] / 60
-                            tempo_horas_total = tempo_por_container_h * qtd_containers
-                            taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
-                            custo = func["salario"] * taxa_ocupacao
-
-                        custo_servicos += custo
-                        if nome not in custos_por_servico:
-                             custos_por_servico[nome] = 0
-                        custos_por_servico[nome] += custo
-                        discriminacao.append({
-                            "Serviço": nome, "Função": func["nome"], "Custo (R$)": custo,
-                            "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                            "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
-                            "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 else 0,
-                            "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0,
-                            "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0
-                        })
-                
-                # -----------------------------
-                # Etiquetagem e Custo de Etiqueta
-                # -----------------------------
-                elif "Etiquetagem" in nome:
-                    unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
-
-                    # Custo do Assistente de Etiquetagem
-                    tempo_pallet_h = 1 / 3600
-                    salario_assistente = 3713.31
-                    tempo_por_unidade_h = 1 / 3600
-                    demanda_horas = tempo_pallet_h * qtd_containers * qtd_pallets
-                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                    custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
-
-                    custo_servicos += custo_assistente
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_assistente
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Assistente", "Custo (R$)": custo_assistente,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem, "Demanda (h)": demanda_horas,
-                        "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
-                    })
-
-                    # Custo da Etiqueta
-                    custo_etiqueta_unitario = 0.06
-                    custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_pallets
-                    custo_servicos += custo_etiquetas
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_etiquetas
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
-                    })
-
-                # -----------------------------
-                # TFA
-                # -----------------------------
-                elif nome == "TFA":
-                    salario_conferente_tfa = 4052.17
-                    tempo_conferente_tfa_min = 120
-                    tempo_conferente_tfa_h = tempo_conferente_tfa_min / 60
-                    demanda_horas_tfa = tempo_conferente_tfa_h * qtd_containers
-                    headcount_tfa_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    taxa_ocupacao_tfa = (demanda_horas_tfa / headcount_tfa_val) if headcount_tfa_val > 0 else 0
-                    custo_conferente_tfa = salario_conferente_tfa * taxa_ocupacao_tfa
-
-                    custo_servicos += custo_conferente_tfa
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_conferente_tfa
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Conferente", "Custo (R$)": custo_conferente_tfa,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": tempo_conferente_tfa_h, "Demanda (h)": demanda_horas_tfa,
-                        "HeadCount (h disponível)": headcount_tfa_val, "Taxa Ocupação": taxa_ocupacao_tfa
-                    })
-
-
-    with st.expander("📦 Expedição"):
-        for nome in servicos["Expedição"][tipo_carga]:
-            if st.checkbox(nome, key=f"exp_{nome}"):
-                servicos_selecionados.append(nome)
-                
-                # --- Separação ---
-                if "Separação" in nome:
-                    funcoes_separacao = [
-                        {"nome": "Conferente", "salario": 4052.17, "tempo": 10}, # 10s
-                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 10} # 10s
-                    ]
-                    unidades_demanda = qtd_containers * qtd_caixas_outros
-                    
-                    for func in funcoes_separacao:
-                        custo = 0.0
-                        taxa_ocupacao = 0.0
-                        demanda_horas = 0.0
-                        
-                        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-
-                        demanda_horas = (func["tempo"] / 3600) * unidades_demanda
-                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                        
-                        if func["nome"] == "Máquina Elétrica":
-                            custo = func["salario"] * taxa_ocupacao * demanda_horas
-                        else: # Mão de obra
-                            custo = func["salario"] * taxa_ocupacao
-                        
-                        custo_servicos += custo
-                        if nome not in custos_por_servico:
-                            custos_por_servico[nome] = 0
-                        custos_por_servico[nome] += custo
-                        discriminacao.append({
-                            "Serviço": nome, "Função": func["nome"], "Custo (R$)": custo,
-                            "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                            "Tempo/Container (h)": func["tempo"] / 3600, "Demanda (h)": demanda_horas,
-                            "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
-                        })
-                
-                # --- Carregamento ---
-                elif "Carregamento" in nome:
-                    funcoes_carregamento = [
-                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
-                        {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                        {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
-                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                        {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
-                    ]
-                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    
-                    for func in funcoes_carregamento:
-                        custo = 0.0
-                        tempo_horas_total = 0
-                        taxa_ocupacao = 0
-                        
-                        if func["nome"] == "Mão de Obra de Terceiros":
-                            custo = func["salario"] * qtd_containers
-                        elif func["nome"] == "Máquina GLP":
-                            tempo_horas = func["tempo"] / 60
-                            demanda_horas = tempo_horas * qtd_containers
-                            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                            custo = func["salario"] * taxa_ocupacao * demanda_horas
-                        else: # Mão de obra
-                            tempo_por_container_h = func["tempo"] / 60
-                            tempo_horas_total = tempo_por_container_h * qtd_containers
-                            taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
-                            custo = func["salario"] * taxa_ocupacao
-                        
-                        custo_servicos += custo
-                        if nome not in custos_por_servico:
-                             custos_por_servico[nome] = 0
-                        custos_por_servico[nome] += custo
-                        discriminacao.append({
-                            "Serviço": nome, "Função": func["nome"], "Custo (R$)": custo,
-                            "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                            "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0, "Demanda (h)": tempo_horas_total,
-                            "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
-                        })
-                
-                # --- Etiquetagem de Expedição ---
-                elif "Etiquetagem" in nome:
-                    salario_assistente = 3713.31
-                    unidades_para_etiquetagem_exp = qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets
-                    tempo_por_unidade_h = 1 / 3600
-                    demanda_horas = tempo_por_unidade_h * unidades_para_etiquetagem_exp * qtd_containers
-                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                    custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
-                    
-                    custo_servicos += custo_assistente
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_assistente
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Assistente", "Custo (R$)": custo_assistente,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem_exp, "Demanda (h)": demanda_horas,
-                        "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
-                    })
-
-                    # Custo da Etiqueta
-                    custo_etiqueta_unitario = 0.06
-                    custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_caixas_outros
-                    custo_servicos += custo_etiquetas
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_etiquetas
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
-                    })
     
-    with st.expander("🏢 Armazenagem"):
-        for nome in servicos["Armazenagem"]:
-            if st.checkbox(nome, key=f"arm_{nome}"):
-                servicos_selecionados.append(nome)
-                custo = valores_servicos[nome]
-                custo_servicos += custo
-                if nome not in custos_por_servico:
-                     custos_por_servico[nome] = 0
-                custos_por_servico[nome] += custo
-                discriminacao.append({
-                    "Serviço": nome, "Função": "N/A", "Custo (R$)": custo,
-                    "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                    "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
-                })
-
-# --- Painel de Resultados (apenas se houver serviços selecionados) ---
-if servicos_selecionados:
+    for servico in servicos_selecionados:
+        custo, detalhes = calcular_custo(servico, qtd_containers, qtd_pallets, qtd_caixas_outros, dias_trabalhados, horas_trabalhadas_dia, eficiencia)
+        custo_servicos += custo
+        custos_por_servico[servico] = custo
+        discriminacao.extend(detalhes)
+    
+    # --- Painel de Resultados ---
     st.markdown("---")
     st.header("📈 Resumo dos Resultados")
     
     col_metricas, col_grafico = st.columns([1, 1.5])
 
     with col_metricas:
+        st.subheader("Custos da Operação")
         st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
     
-        total_containers = qtd_containers
-        total_pallets = qtd_containers * qtd_pallets
-        total_caixas_outros = qtd_containers * qtd_caixas_outros
+    total_containers = qtd_containers
+    total_pallets = qtd_containers * qtd_pallets
+    total_caixas_outros = qtd_containers * qtd_caixas_outros
 
+    if any(s in receitas_por_servico for s in servicos_selecionados):
+        receita_total = sum(receitas_por_servico.get(s, 0) for s in servicos_selecionados)
+        lucro = receita_total - custo_servicos
+        margem_lucro = (lucro / receita_total) * 100 if receita_total > 0 else 0
+        
+        with col_metricas:
+            st.markdown("---")
+            st.subheader("Receita e Lucro")
+            st.metric("💵 **Receita Total**", f"R$ {receita_total:,.2f}")
+            st.metric("✅ **Lucro Estimado**", f"R$ {lucro:,.2f}")
+            st.metric("📊 **Margem de Lucro**", f"{margem_lucro:,.2f}%")
+            
+    with col_metricas:
         st.markdown("---")
         st.subheader("Totais da Operação")
-    
         st.metric("🧊 **Total de Containers**", f"{total_containers:,.0f}")
         if total_pallets > 0:
             st.metric("🧱 **Total de Pallets**", f"{total_pallets:,.0f}")
         if total_caixas_outros > 0:
             st.metric(f"🛍️ **Total de {embalagem}**", f"{total_caixas_outros:,.0f}")
-        
-
+    
     with col_grafico:
         st.subheader("Distribuição de Custos")
         df_custos = pd.DataFrame(list(custos_por_servico.items()), columns=['Serviço', 'Custo'])
         if not df_custos.empty:
-            fig, ax = plt.subplots(figsize=(2, 2))
             df_custos_final = df_custos[df_custos['Custo'] > 0]
-            ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 9})
-            ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
-            st.pyplot(fig)
+            if not df_custos_final.empty:
+                fig, ax = plt.subplots(figsize=(6, 6))
+                ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 10})
+                ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
+                st.pyplot(fig)
+            else:
+                st.info("Nenhum custo calculado para exibir o gráfico.")
         else:
             st.info("Nenhum serviço selecionado para calcular a distribuição de custos.")
 
