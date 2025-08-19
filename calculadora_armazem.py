@@ -459,23 +459,37 @@ with st.container(border=True):
 if servicos_selecionados:
     st.markdown("---")
     st.header("📈 Resumo dos Resultados")
+    
+    col_metricas, col_grafico = st.columns([1, 1.5])
 
-    # Cards
-    total_containers = qtd_containers
-    total_pallets = qtd_containers * qtd_pallets
-    total_caixas_outros = qtd_containers * qtd_caixas_outros
+    with col_metricas:
+        st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
+    
+        total_containers = qtd_containers
+        total_pallets = qtd_containers * qtd_pallets
+        total_caixas_outros = qtd_containers * qtd_caixas_outros
 
-    col_cards = st.columns(4)
-    with col_cards[0]:
-        st.markdown(f"<div class='card'><div class='big-metric'>R$ {custo_servicos:,.2f}</div><div>💰 Custo Total</div></div>", unsafe_allow_html=True)
-    with col_cards[1]:
-        st.markdown(f"<div class='card'><div class='big-metric'>{total_containers:,}</div><div>🧊 Containers</div></div>", unsafe_allow_html=True)
-    with col_cards[2]:
-        st.markdown(f"<div class='card'><div class='big-metric'>{total_pallets:,}</div><div>🧱 Pallets</div></div>", unsafe_allow_html=True)
-    with col_cards[3]:
+        st.markdown("---")
+        st.subheader("Totais da Operação")
+    
+        st.metric("🧊 **Total de Containers**", f"{total_containers:,.0f}")
+        if total_pallets > 0:
+            st.metric("🧱 **Total de Pallets**", f"{total_pallets:,.0f}")
         if total_caixas_outros > 0:
-            st.markdown(f"<div class='card'><div class='big-metric'>{total_caixas_outros:,}</div><div>🛍️ {embalagem}</div></div>", unsafe_allow_html=True)        
+            st.metric(f"🛍️ **Total de {embalagem}**", f"{total_caixas_outros:,.0f}")
+        
 
+    with col_grafico:
+        st.subheader("Distribuição de Custos")
+        df_custos = pd.DataFrame(list(custos_por_servico.items()), columns=['Serviço', 'Custo'])
+        if not df_custos.empty:
+            fig, ax = plt.subplots(figsize=(2, 2))
+            df_custos_final = df_custos[df_custos['Custo'] > 0]
+            ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 9})
+            ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
+            st.pyplot(fig)
+        else:
+            st.info("Nenhum serviço selecionado para calcular a distribuição de custos.")
 
     # --- Tabela de discriminação detalhada ---
     with st.expander("📋 Ver Discriminação Detalhada dos Custos"):
