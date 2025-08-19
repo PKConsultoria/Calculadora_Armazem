@@ -428,12 +428,54 @@ with st.expander("📦 Expedição"):
                         "Custo (R$)": custo
                     })
             
-            # Etiquetagem e Carregamento mantêm o cálculo original
+            # -----------------------------
+            # Carregamento
+            # -----------------------------
+            elif "Carregamento" in nome:
+                funcoes_carregamento = [
+                    {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
+                    {"nome": "Analista", "salario": 4780.41, "tempo": 10},
+                    {"nome": "Coordenador", "salario": 6775.58, "tempo": 45},
+                    {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
+                    {"nome": "Máquina GLP", "salario": 50.0, "tempo": 120},
+                ]
+
+                for func in funcoes_carregamento:
+                    tempo_horas_total = 0
+                    custo = 0.0
+                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+                    
+                    if func["nome"] == "Mão de Obra de Terceiros":
+                        custo = func["salario"] * qtd_containers
+                    elif func["nome"] == "Máquina GLP":
+                        tempo_horas = func["tempo"] / 60
+                        demanda_horas = tempo_horas * qtd_containers
+                        taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
+                        custo = func["salario"] * taxa_ocupacao * demanda_horas
+                    else: # Mão de obra (Conferente, Analista, Coordenador)
+                        tempo_por_container_h = func["tempo"] / 60
+                        tempo_horas_total = tempo_por_container_h * qtd_containers
+                        taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
+                        custo = func["salario"] * taxa_ocupacao
+                    
+                    custo_servicos += custo
+                    discriminacao.append({
+                        "Serviço": nome,
+                        "Função": func["nome"],
+                        "Qtd Containers": qtd_containers,
+                        "Qtd Pallets": qtd_pallets,
+                        "Qtd Caixas/Outros": qtd_caixas_outros,
+                        "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
+                        "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 else 0,
+                        "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0,
+                        "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0,
+                        "Custo (R$)": custo
+                    })
+
+            # Etiquetagem de Expedição
             elif "Etiquetagem" in nome:
                 unidades_expedicao = qtd_pallets if embalagem == "Palletizada" else qtd_caixas_outros
                 custo_servicos += valores_servicos[nome] * unidades_expedicao * qtd_containers
-            elif "Carregamento" in nome:
-                custo_servicos += valores_servicos[nome] * qtd_containers
 
 # -----------------------------
 # Armazenagem (sempre aparece)
