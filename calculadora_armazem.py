@@ -435,9 +435,9 @@ with st.expander("📦 Expedição"):
                 funcoes_carregamento = [
                     {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
                     {"nome": "Analista", "salario": 4780.41, "tempo": 10},
-                    {"nome": "Coordenador", "salario": 6775.58, "tempo": 45},
+                    {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
                     {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                    {"nome": "Máquina GLP", "salario": 50.0, "tempo": 120},
+                    {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
                 ]
 
                 for func in funcoes_carregamento:
@@ -486,7 +486,7 @@ with st.expander("📦 Expedição"):
                 demanda_horas = tempo_por_unidade_h * unidades_para_etiquetagem_exp * qtd_containers
                 headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                 taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                custo_assistente = salario_assistente * taxa_ocupacao
+                custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
                 
                 custo_servicos += custo_assistente
                 discriminacao.append({
