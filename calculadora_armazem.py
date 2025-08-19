@@ -22,7 +22,6 @@ with st.sidebar:
     horas_trabalhadas_dia = st.number_input("Horas Trabalhadas por Dia", min_value=0.0, value=8.8, step=0.1, format="%.2f")
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
     
-    # --- NOVO CÓDIGO: SLIDER DE MARKUP NA BARRA LATERAL ---
     st.subheader("💰 Estratégia de Preço")
     markup_percent = st.slider("Markup (%)", min_value=0, max_value=100, value=20, step=1, format="%d%%")
     
@@ -467,7 +466,6 @@ if servicos_selecionados:
     
     col_metricas, col_grafico = st.columns([1, 1.5])
 
-    # --- NOVO CÓDIGO: CÁLCULOS DE RECEITA E LUCRO ---
     markup_decimal = markup_percent / 100
     receita_total = custo_servicos * (1 + markup_decimal)
     lucro_total = receita_total - custo_servicos
@@ -475,7 +473,6 @@ if servicos_selecionados:
     with col_metricas:
         st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
         
-        # --- NOVO CÓDIGO: EXIBIÇÃO DA RECEITA E LUCRO ---
         st.metric("💲 **Receita Total (com markup)**", f"R$ {receita_total:,.2f}")
         st.metric("📊 **Lucro Bruto**", f"R$ {lucro_total:,.2f}")
 
@@ -506,15 +503,18 @@ if servicos_selecionados:
             st.info("Nenhum serviço selecionado para calcular a distribuição de custos.")
 
     # --- Tabela de discriminação detalhada ---
-    with st.expander("📋 Ver Discriminação Detalhada dos Custos"):
+    with st.expander("📋 Ver Discriminação Detalhada dos Custos e Receitas"):
         if discriminacao:
             df_discriminacao = pd.DataFrame(discriminacao)
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
             
+            # NOVO CÓDIGO: Calcula a receita para cada item da discriminação
+            df_discriminacao['Receita (R$)'] = df_discriminacao['Custo (R$)'] * (1 + markup_decimal)
+
             df_discriminacao = df_discriminacao[[
                 "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
-                "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)"
+                "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)", "Receita (R$)"
             ]]
             
             st.dataframe(df_discriminacao.style.format({
@@ -522,9 +522,10 @@ if servicos_selecionados:
                 "HeadCount (h disponível)": "{:.2f}",
                 "Taxa Ocupação": "{:.2f}",
                 "Custo (R$)": "R$ {:,.2f}",
+                "Receita (R$)": "R$ {:,.2f}",
                 "Qtd Containers": "{:.0f}",
                 "Qtd Pallets": "{:.0f}",
                 "Qtd Caixas/Outros": "{:.0f}"
             }))
         else:
-            st.info("Nenhuma discriminação de custos disponível.")
+            st.info("Nenhuma discriminação de custos e receitas disponível.")
