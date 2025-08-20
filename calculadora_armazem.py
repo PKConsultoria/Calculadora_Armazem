@@ -190,23 +190,7 @@ with st.container(border=True):
         },
         "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
     }
-    
-    # Valores de cada serviço
-    valores_servicos = {
-        "Descarga Batida": 100.0,
-        "Descarga Palletizada": 80.0,
-        "Etiquetagem Batida": 0.50,
-        "Etiquetagem Palletizada": 0.30,
-        "TFA": 200.0,
-        "Separação Batida": 1.20,
-        "Separação Palletizada": 5.0,
-        "Carregamento Batido": 90.0,
-        "Carregamento Palletizado": 70.0,
-        "Diária": 2.0,
-        "Pico Quinzenal": 500.0,
-        "Pico Mensal": 900.0
-    }
-    
+      
     servicos_selecionados = []
     custos_por_servico = {}
     discriminacao = []
