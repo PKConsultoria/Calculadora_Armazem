@@ -2,6 +2,13 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# --- Bibliotecas para Exportar PDF ---
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+
 # --- Configuração inicial da página ---
 st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="wide")
 
@@ -557,3 +564,73 @@ if servicos_selecionados:
             }))
         else:
             st.info("Nenhuma discriminação de custos e receitas disponível.")
+            
+    # --- Exportar para PDF ---
+    buffer = BytesIO()
+
+    # Documento PDF
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elementos = []
+    styles = getSampleStyleSheet()
+
+    # Título
+    elementos.append(Paragraph("📊 Relatório - Calculadora Armazém", styles['Title']))
+    elementos.append(Spacer(1, 12))
+
+    # Dados principais
+    elementos.append(Paragraph(f"<b>Armazém:</b> {armazem}", styles['Normal']))
+    elementos.append(Paragraph(f"<b>Cliente:</b> {cliente}", styles['Normal']))
+    elementos.append(Paragraph(f"<b>Vendedor:</b> {vendedor}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Métricas principais
+    elementos.append(Paragraph(f"<b>Custo Total:</b> R$ {custo_servicos:,.2f}", styles['Normal']))
+    elementos.append(Paragraph(f"<b>Receita Total:</b> R$ {receita_total:,.2f}", styles['Normal']))
+    elementos.append(Paragraph(f"<b>Lucro Bruto:</b> R$ {lucro_total:,.2f}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Totais da operação
+    elementos.append(Paragraph("<b>Totais da Operação:</b>", styles['Heading3']))
+    elementos.append(Paragraph(f"🧊 Containers: {total_containers:,.0f}", styles['Normal']))
+    if total_pallets > 0:
+        elementos.append(Paragraph(f"🧱 Pallets: {total_pallets:,.0f}", styles['Normal']))
+    if total_caixas_outros > 0:
+        elementos.append(Paragraph(f"🛍️ {embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Discriminação detalhada (tabela resumida)
+    elementos.append(Paragraph("<b>Discriminação dos Custos e Receitas:</b>", styles['Heading3']))
+
+    if 'df_discriminacao' in locals() and not df_discriminacao.empty:
+        # Formata os dados para a tabela
+        df_formatado = df_discriminacao.copy()
+        for col in ["Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação"]:
+            df_formatado[col] = df_formatado[col].apply(lambda x: f"{x:.2f}")
+        for col in ["Custo (R$)", "Receita (R$)"]:
+            df_formatado[col] = df_formatado[col].apply(lambda x: f"R$ {x:,.2f}")
+        for col in ["Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros"]:
+            df_formatado[col] = df_formatado[col].apply(lambda x: f"{x:.0f}")
+
+        tabela_dados = [df_formatado.columns.tolist()] + df_formatado.values.tolist()
+        tabela = Table(tabela_dados, repeatRows=1)
+        tabela.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 9),
+            ('BOTTOMPADDING', (0,0), (-1,0), 6),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ]))
+        elementos.append(tabela)
+
+    # Construir o PDF
+    doc.build(elementos)
+
+    # Botão de download
+    st.download_button(
+        label="📥 Baixar Relatório em PDF",
+        data=buffer.getvalue(),
+        file_name=f"relatorio_armazem_{cliente or 'sem_cliente'}.pdf",
+        mime="application/pdf"
+    )
