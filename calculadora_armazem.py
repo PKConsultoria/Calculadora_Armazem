@@ -534,7 +534,7 @@ if servicos_selecionados:
             # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
-                    return (0.10 / 100) * valor_carga * qtd_containers
+                    return 0.10 * valor_carga * qtd_containers
                 else:
                     return row['Custo (R$)'] * (1 + markup_decimal)
             
