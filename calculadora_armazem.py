@@ -455,7 +455,7 @@ with st.container(border=True):
                      custos_por_servico[nome] = 0
                 custos_por_servico[nome] += custo
                 discriminacao.append({
-                    "Serviço": nome, "Função": "N/A", "Custo (R$)": custo,
+                    "Serviço": nome, "Função": "Armazenagem", "Custo (R$)": custo,
                     "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                     "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
                 })
@@ -470,7 +470,7 @@ with st.container(border=True):
             custos_por_servico["Ad Valorem (Receita)"] = -receita_ad_valorem
 
             discriminacao.append({
-                "Serviço": "Ad Valorem", "Função": "N/A", "Custo (R$)": 0.0,
+                "Serviço": "Ad Valorem", "Função": "Armazenagem", "Custo (R$)": 0.0,
                 "Qtd Containers": qtd_containers, "Qtd Pallets": 0, "Qtd Caixas/Outros": 0,
                 "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
             })
