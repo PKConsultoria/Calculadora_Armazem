@@ -7,10 +7,11 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus.flowables import PageBreak
+
 
 # --- Configuração inicial da página ---
 st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="wide")
@@ -26,25 +27,25 @@ with st.sidebar:
     armazem = st.selectbox("Armazém", ["Espinheiros", "Garuva"])
     cliente = st.text_input("Cliente", placeholder="Nome do Cliente")
     vendedor = st.text_input("Vendedor", placeholder="Nome do Vendedor")
-    
+
     st.subheader("📊 Métricas Adotadas")
     dias_trabalhados = st.number_input("Dias Trabalhados", min_value=1, value=22, step=1)
     horas_trabalhadas_dia = st.number_input("Horas Trabalhadas por Dia", min_value=0.0, value=8.8, step=0.1, format="%.2f")
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
-    
+
     st.subheader("💰 Estratégia de Preço")
     markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=20.0, step=0.5, format="%.1f%%")
-    
+
 
 # --- Container principal para o corpo da aplicação ---
 with st.container(border=True):
     st.header("🏗️ Detalhes da Operação")
-    
+
     col1, col2 = st.columns(2)
     with col1:
         tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
         qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, step=1)
-   
+
     with col2:
         qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
         peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
@@ -182,12 +183,12 @@ with st.container(border=True):
 # --- Container de Serviços ---
 with st.container(border=True):
     st.header("🛠️ Serviços")
-    
+
     # tempo médio de execução
     tempos_execucao = {"Batida": 120, "Palletizada": 30}
     tempo_exec = tempos_execucao.get(tipo_carga, 0)
     st.info(f"⏱️ Tempo estimado de execução por operação: **{tempo_exec} minutos**")
-    
+
     # Serviços por tipo de carga
     servicos = {
         "Recebimento": {
@@ -200,7 +201,7 @@ with st.container(border=True):
         },
         "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
     }
-    
+
     # Valores de cada serviço
     valores_servicos = {
         "Descarga Batida": 100.0,
@@ -216,7 +217,7 @@ with st.container(border=True):
         "Pico Quinzenal": 0.0,
         "Pico Mensal": 0.0
     }
-    
+
     servicos_selecionados = []
     custos_por_servico = {}
     discriminacao = []
@@ -228,7 +229,7 @@ with st.container(border=True):
         for nome in servicos["Recebimento"][tipo_carga]:
             if st.checkbox(nome, key=f"rec_{nome}"):
                 servicos_selecionados.append(nome)
-                
+
                 # -----------------------------
                 # Descarga
                 # -----------------------------
@@ -241,15 +242,15 @@ with st.container(border=True):
                         {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
                         {"nome": "Stretch", "salario": 6.85, "tempo": 0}
                     ]
-                    
+
                     unidades_totais = qtd_pallets + qtd_caixas_outros
-                    
+
                     for func in funcoes:
                         tempo_horas_total = 0
                         custo = 0
-                        
+
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                        
+
                         if func["nome"] == "Stretch":
                             custo = func["salario"] * qtd_pallets * qtd_containers
                         elif func["nome"] == "Mão de Obra de Terceiros":
@@ -278,7 +279,7 @@ with st.container(border=True):
                             "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0,
                             "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0
                         })
-                
+
                 # -----------------------------
                 # Etiquetagem e Custo de Etiqueta
                 # -----------------------------
@@ -346,7 +347,7 @@ with st.container(border=True):
         for nome in servicos["Expedição"][tipo_carga]:
             if st.checkbox(nome, key=f"exp_{nome}"):
                 servicos_selecionados.append(nome)
-                
+
                 # --- Separação ---
                 if "Separação" in nome:
                     funcoes_separacao = [
@@ -354,22 +355,22 @@ with st.container(border=True):
                         {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 10} # 10s
                     ]
                     unidades_demanda = qtd_containers * qtd_caixas_outros
-                    
+
                     for func in funcoes_separacao:
                         custo = 0.0
                         taxa_ocupacao = 0.0
                         demanda_horas = 0.0
-                        
+
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
 
                         demanda_horas = (func["tempo"] / 3600) * unidades_demanda
                         taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
-                        
+
                         if func["nome"] == "Máquina Elétrica":
                             custo = func["salario"] * taxa_ocupacao * demanda_horas
                         else: # Mão de obra
                             custo = func["salario"] * taxa_ocupacao
-                        
+
                         custo_servicos += custo
                         if nome not in custos_por_servico:
                             custos_por_servico[nome] = 0
@@ -380,7 +381,7 @@ with st.container(border=True):
                             "Tempo/Container (h)": func["tempo"] / 3600, "Demanda (h)": demanda_horas,
                             "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
                         })
-                
+
                 # --- Carregamento ---
                 elif "Carregamento" in nome:
                     funcoes_carregamento = [
@@ -391,12 +392,12 @@ with st.container(border=True):
                         {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
                     ]
                     headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    
+
                     for func in funcoes_carregamento:
                         custo = 0.0
                         tempo_horas_total = 0
                         taxa_ocupacao = 0
-                        
+
                         if func["nome"] == "Mão de Obra de Terceiros":
                             custo = func["salario"] * qtd_containers
                         elif func["nome"] == "Máquina GLP":
@@ -409,7 +410,7 @@ with st.container(border=True):
                             tempo_horas_total = tempo_por_container_h * qtd_containers
                             taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
                             custo = func["salario"] * taxa_ocupacao
-                        
+
                         custo_servicos += custo
                         if nome not in custos_por_servico:
                              custos_por_servico[nome] = 0
@@ -420,7 +421,7 @@ with st.container(border=True):
                             "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0, "Demanda (h)": tempo_horas_total,
                             "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
                         })
-                
+
                 # --- Etiquetagem de Expedição ---
                 elif "Etiquetagem" in nome:
                     salario_assistente = 3713.31
@@ -430,7 +431,7 @@ with st.container(border=True):
                     headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                     taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
                     custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
-                    
+
                     custo_servicos += custo_assistente
                     if nome not in custos_por_servico:
                          custos_por_servico[nome] = 0
@@ -454,7 +455,7 @@ with st.container(border=True):
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
                     })
-    
+
     with st.expander("🏢 Armazenagem"):
         for nome in servicos["Armazenagem"]:
             if st.checkbox(nome, key=f"arm_{nome}"):
@@ -475,7 +476,7 @@ with st.container(border=True):
             servicos_selecionados.append("Ad Valorem")
             receita_ad_valorem = (0.1 / 100) * valor_carga * qtd_containers
             receita_total += receita_ad_valorem
-            
+
             # Adicionando a receita como uma entrada negativa para o gráfico de custos
             custos_por_servico["Ad Valorem (Receita)"] = -receita_ad_valorem
 
@@ -490,7 +491,7 @@ with st.container(border=True):
 if servicos_selecionados:
     st.markdown("---")
     st.header("📈 Resumo dos Resultados")
-    
+
     col_metricas, col_grafico = st.columns([1, 1.5])
 
     markup_decimal = markup_percent / 100
@@ -500,7 +501,7 @@ if servicos_selecionados:
 
     with col_metricas:
         st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
-        
+
         st.metric("💲 **Receita Total (com markup)**", f"R$ {receita_total:,.2f}")
         st.metric("📊 **Lucro Bruto**", f"R$ {lucro_total:,.2f}")
 
@@ -510,13 +511,13 @@ if servicos_selecionados:
 
         st.markdown("---")
         st.subheader("Totais da Operação")
-    
+
         st.metric("🧊 **Total de Containers**", f"{total_containers:,.0f}")
         if total_pallets > 0:
             st.metric("🧱 **Total de Pallets**", f"{total_pallets:,.0f}")
         if total_caixas_outros > 0:
             st.metric(f"🛍️ **Total de {embalagem}**", f"{total_caixas_outros:,.0f}")
-        
+
 
     with col_grafico:
         st.subheader("Distribuição de Custos")
@@ -540,21 +541,21 @@ if servicos_selecionados:
             df_discriminacao = pd.DataFrame(discriminacao)
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
-            
+
             # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
                     return (0.1 / 100) * valor_carga * qtd_containers
                 else:
                     return row['Custo (R$)'] * (1 + markup_decimal)
-            
+
             df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
 
             df_discriminacao = df_discriminacao[[
                 "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
                 "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)", "Receita (R$)"
             ]]
-            
+
             st.dataframe(df_discriminacao.style.format({
                 "Demanda (h)": "{:.2f}",
                 "HeadCount (h disponível)": "{:.2f}",
@@ -567,7 +568,7 @@ if servicos_selecionados:
             }))
         else:
             st.info("Nenhuma discriminação de custos e receitas disponível.")
-            
+
     # --- Exportar para PDF ---
     buffer = BytesIO()
 
@@ -610,7 +611,7 @@ if servicos_selecionados:
     if total_caixas_outros > 0:
         elementos.append(Paragraph(f"🛍️ {embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
     elementos.append(Spacer(1, 12))
-    
+
     # Seção de Discriminação Detalhada
     elementos.append(Paragraph("<b>Discriminação de Custos e Receitas por Serviço:</b>", styles['Heading2']))
     elementos.append(Spacer(1, 6))
@@ -618,18 +619,18 @@ if servicos_selecionados:
     if 'df_discriminacao' in locals() and not df_discriminacao.empty:
         # Formata os dados para a tabela
         df_formatado = df_discriminacao.copy()
-        
+
         # Define as colunas a serem exibidas na tabela
         cols_to_display = ["Serviço", "Função", "Demanda (h)", "Custo (R$)", "Receita (R$)"]
         df_display = df_formatado[cols_to_display]
-        
+
         # Formata as colunas para strings
         df_display["Demanda (h)"] = df_display["Demanda (h)"].apply(lambda x: f"{x:.2f}")
         df_display["Custo (R$)"] = df_display["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
         df_display["Receita (R$)"] = df_display["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
 
         tabela_dados = [df_display.columns.tolist()] + df_display.values.tolist()
-        
+
         tabela = Table(tabela_dados)
         tabela.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')), # Azul escuro para o cabeçalho
