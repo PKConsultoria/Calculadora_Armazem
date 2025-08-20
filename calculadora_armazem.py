@@ -585,7 +585,7 @@ if servicos_selecionados:
         styles.add(ParagraphStyle(name='NormalBold', fontName='Helvetica-Bold', fontSize=10))
 
         # Título do Relatório
-        elementos.append(Paragraph("📊 Relatório - Calculadora Armazém", styles['Title']))
+        elementos.append(Paragraph("Relatório - Calculadora Armazém", styles['Title']))
         elementos.append(Spacer(1, 18))
 
         # Seção de Informações Básicas
@@ -610,11 +610,11 @@ if servicos_selecionados:
         # Seção de Totais da Operação
         elementos.append(Paragraph("<b>Totais da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
-        elementos.append(Paragraph(f"🧊 Containers: {total_containers:,.0f}", styles['Normal']))
+        elementos.append(Paragraph(f"Containers: {total_containers:,.0f}", styles['Normal']))
         if total_pallets > 0:
-            elementos.append(Paragraph(f"🧱 Pallets: {total_pallets:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"Pallets: {total_pallets:,.0f}", styles['Normal']))
         if total_caixas_outros > 0:
-            elementos.append(Paragraph(f"🛍️ {embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"{embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
         # Seção de Discriminação Detalhada
