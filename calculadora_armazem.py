@@ -585,7 +585,7 @@ if servicos_selecionados:
         styles.add(ParagraphStyle(name='NormalBold', fontName='Helvetica-Bold', fontSize=10))
 
         # Título do Relatório
-        elementos.append(Paragraph("Relatório - Calculadora Armazém", styles['Title']))
+        elementos.append(Paragraph("📊 Relatório - Calculadora Armazém", styles['Title']))
         elementos.append(Spacer(1, 18))
 
         # Seção de Informações Básicas
@@ -610,11 +610,11 @@ if servicos_selecionados:
         # Seção de Totais da Operação
         elementos.append(Paragraph("<b>Totais da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
-        elementos.append(Paragraph(f"Containers: {total_containers:,.0f}", styles['Normal']))
+        elementos.append(Paragraph(f"🧊 Containers: {total_containers:,.0f}", styles['Normal']))
         if total_pallets > 0:
-            elementos.append(Paragraph(f"Pallets: {total_pallets:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"🧱 Pallets: {total_pallets:,.0f}", styles['Normal']))
         if total_caixas_outros > 0:
-            elementos.append(Paragraph(f"{embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"🛍️ {embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
         # Seção de Discriminação Detalhada
@@ -627,7 +627,9 @@ if servicos_selecionados:
 
             # Define as colunas a serem exibidas na tabela
             cols_to_display = ["Serviço", "Função", "Demanda (h)", "Custo (R$)", "Receita (R$)"]
-            df_display = df_formatado[cols_to_display]
+            
+            # CORREÇÃO: Cria uma cópia explícita do DataFrame para evitar o SettingWithCopyWarning
+            df_display = df_formatado[cols_to_display].copy()
 
             # Formata as colunas para strings
             df_display["Demanda (h)"] = df_display["Demanda (h)"].apply(lambda x: f"{x:.2f}")
@@ -649,11 +651,19 @@ if servicos_selecionados:
                 ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#f2f2f2')), # Cor de fundo alternada
             ]))
             elementos.append(tabela)
-        
-        #Adiciona a data e hora de impressão no final do PDF
+
+        # NOVO: Adiciona a data e hora de impressão no final do PDF com fuso horário de Brasília
         elementos.append(Spacer(1, 24))
-        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-        data_impressao = datetime.now(fuso_brasilia).strftime("Relatório gerado em: %d/%m/%Y às %H:%M:%S")
+        try:
+            import pytz
+            from datetime import datetime
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            data_impressao = datetime.now(fuso_brasilia).strftime("Relatório gerado em: %d/%m/%Y às %H:%M:%S")
+        except ImportError:
+            # Caso o pytz não esteja instalado, usa a hora local
+            from datetime import datetime
+            data_impressao = datetime.now().strftime("Relatório gerado em: %d/%m/%Y às %H:%M:%S (Hora Local)")
+
         elementos.append(Paragraph(data_impressao, styles['Normal']))
 
         # Construir o PDF
