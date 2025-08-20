@@ -433,7 +433,6 @@ with st.container(border=True):
         for nome in servicos["Armazenagem"]:
             if st.checkbox(nome, key=f"arm_{nome}"):
                 servicos_selecionados.append(nome)
-                custo = valores_servicos[nome]
                 custo_servicos += custo
                 if nome not in custos_por_servico:
                      custos_por_servico[nome] = 0
