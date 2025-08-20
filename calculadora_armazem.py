@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from fpdf import FPDF # fpdf2 é compatível com esta sintaxe
-import io
 
 # --- Configuração inicial da página ---
 st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="wide")
@@ -542,12 +540,12 @@ if servicos_selecionados:
             
             df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
 
-            df_discriminacao_final = df_discriminacao[[
+            df_discriminacao = df_discriminacao[[
                 "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
                 "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)", "Receita (R$)"
             ]]
             
-            st.dataframe(df_discriminacao_final.style.format({
+            st.dataframe(df_discriminacao.style.format({
                 "Demanda (h)": "{:.2f}",
                 "HeadCount (h disponível)": "{:.2f}",
                 "Taxa Ocupação": "{:.2f}",
@@ -559,70 +557,3 @@ if servicos_selecionados:
             }))
         else:
             st.info("Nenhuma discriminação de custos e receitas disponível.")
-
-    # --- NOVO CÓDIGO: Botão para exportar PDF ---
-    st.markdown("---")
-    st.subheader("📥 Exportar Relatório")
-
-    def criar_pdf(cliente, vendedor, armazem, custo_servicos, receita_total, lucro_total, df_discriminacao):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "Relatório de Receitas e Custos - Armazém", 0, 1, "C")
-        pdf.ln(5)
-
-        # Informações Básicas
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 7, f"Armazém: {armazem}", 0, 1)
-        pdf.cell(0, 7, f"Cliente: {cliente}", 0, 1)
-        pdf.cell(0, 7, f"Vendedor: {vendedor}", 0, 1)
-        pdf.ln(5)
-        
-        # Métricas de Resumo
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Resumo dos Resultados", 0, 1)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 7, f"Custo Total dos Serviços: R$ {custo_servicos:,.2f}", 0, 1)
-        pdf.cell(0, 7, f"Receita Total (com markup): R$ {receita_total:,.2f}", 0, 1)
-        pdf.cell(0, 7, f"Lucro Bruto: R$ {lucro_total:,.2f}", 0, 1)
-        pdf.ln(5)
-        
-        # Tabela de Discriminação
-        pdf.set_font("Arial", "B", 10)
-        pdf.cell(0, 10, "Discriminação Detalhada dos Custos e Receitas", 0, 1)
-        
-        # Títulos da tabela
-        col_widths = [30, 30, 25, 30, 30]
-        headers = ["Serviço", "Função", "Qtd Containers", "Custo (R$)", "Receita (R$)"]
-        
-        for i, header in enumerate(headers):
-            pdf.cell(col_widths[i], 7, header, 1, 0, 'C')
-        pdf.ln()
-
-        pdf.set_font("Arial", "", 8)
-        
-        # Conteúdo da tabela
-        for index, row in df_discriminacao_final.iterrows():
-            pdf.cell(col_widths[0], 7, str(row['Serviço']), 1)
-            pdf.cell(col_widths[1], 7, str(row['Função']), 1)
-            pdf.cell(col_widths[2], 7, f"{row['Qtd Containers']:.0f}", 1, 0, 'R')
-            pdf.cell(col_widths[3], 7, f"R$ {row['Custo (R$)']:,.2f}", 1, 0, 'R')
-            pdf.cell(col_widths[4], 7, f"R$ {row['Receita (R$)']:,.2f}", 1, 0, 'R')
-            pdf.ln()
-
-        pdf.ln(10)
-        pdf.set_font("Arial", "I", 8)
-        pdf.cell(0, 5, f"Relatório gerado em: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M:%S')}", 0, 1, "C")
-        
-        # CORREÇÃO: Removido o parâmetro 'dest='S' do método output().
-        return pdf.output().encode('latin-1')
-
-    if discriminacao:
-        pdf_output = criar_pdf(cliente, vendedor, armazem, custo_servicos, receita_total, lucro_total, df_discriminacao_final)
-        
-        st.download_button(
-            label="Baixar Relatório em PDF",
-            data=io.BytesIO(pdf_output),
-            file_name="relatorio_armazem.pdf",
-            mime="application/pdf"
-        )
