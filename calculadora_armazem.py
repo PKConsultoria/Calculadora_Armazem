@@ -542,7 +542,6 @@ if servicos_selecionados:
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
 
-            # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
                     return (0.1 / 100) * valor_carga * qtd_containers
@@ -584,7 +583,7 @@ if servicos_selecionados:
         styles.add(ParagraphStyle(name='NormalBold', fontName='Helvetica-Bold', fontSize=10))
 
         # Título do Relatório
-        elementos.append(Paragraph("📊 Relatório - Calculadora Armazém", styles['Title']))
+        elementos.append(Paragraph("Relatório - Calculadora Armazém", styles['Title']))
         elementos.append(Spacer(1, 18))
 
         # Seção de Informações Básicas
@@ -609,11 +608,11 @@ if servicos_selecionados:
         # Seção de Totais da Operação
         elementos.append(Paragraph("<b>Totais da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
-        elementos.append(Paragraph(f"🧊 Containers: {total_containers:,.0f}", styles['Normal']))
+        elementos.append(Paragraph(f"Containers: {total_containers:,.0f}", styles['Normal']))
         if total_pallets > 0:
-            elementos.append(Paragraph(f"🧱 Pallets: {total_pallets:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"Pallets: {total_pallets:,.0f}", styles['Normal']))
         if total_caixas_outros > 0:
-            elementos.append(Paragraph(f"🛍️ {embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
+            elementos.append(Paragraph(f"{embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
         # Seção de Discriminação Detalhada
@@ -637,7 +636,7 @@ if servicos_selecionados:
 
             tabela = Table(tabela_dados)
             tabela.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')), # Azul escuro para o cabeçalho
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
                 ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
                 ('ALIGN',(0,0),(-1,-1),'LEFT'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -645,7 +644,7 @@ if servicos_selecionados:
                 ('BOTTOMPADDING', (0,0), (-1,0), 8),
                 ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
                 ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#f2f2f2')), # Cor de fundo alternada
+                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#f2f2f2')),
             ]))
             elementos.append(tabela)
 
