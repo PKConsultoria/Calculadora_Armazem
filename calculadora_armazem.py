@@ -617,7 +617,7 @@ if servicos_selecionados:
         return pdf.output(dest='S').encode('latin-1')
 
     if discriminacao:
-            def criar_pdf(cliente, vendedor, armazem, custo_servicos, receita_total, lucro_total, df_discriminacao):
+    def criar_pdf(cliente, vendedor, armazem, custo_servicos, receita_total, lucro_total, df_discriminacao):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", "B", 16)
