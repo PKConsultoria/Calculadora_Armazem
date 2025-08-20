@@ -11,7 +11,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus.flowables import PageBreak
-import datetime # NOVO: Importação para capturar a data e hora atual
+import pytz
+from datetime import datetime
 
 # --- Configuração inicial da página ---
 st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="wide")
@@ -651,7 +652,8 @@ if servicos_selecionados:
         
         #Adiciona a data e hora de impressão no final do PDF
         elementos.append(Spacer(1, 24))
-        data_impressao = datetime.datetime.now().strftime("Relatório gerado em: %d/%m/%Y às %H:%M:%S")
+        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+        data_impressao = datetime.now(fuso_brasilia).strftime("Relatório gerado em: %d/%m/%Y às %H:%M:%S")
         elementos.append(Paragraph(data_impressao, styles['Normal']))
 
         # Construir o PDF
