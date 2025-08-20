@@ -202,9 +202,9 @@ with st.container(border=True):
         "Separação Palletizada": 5.0,
         "Carregamento Batido": 90.0,
         "Carregamento Palletizado": 70.0,
-        "Diária": 2.0,
-        "Pico Quinzenal": 500.0,
-        "Pico Mensal": 900.0
+        "Diária": 0.0,
+        "Pico Quinzenal": 0.0,
+        "Pico Mensal": 0.0
     }
     
     servicos_selecionados = []
