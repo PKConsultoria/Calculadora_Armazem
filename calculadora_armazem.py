@@ -471,7 +471,7 @@ with st.container(border=True):
 
             discriminacao.append({
                 "Serviço": "Ad Valorem", "Função": "Armazenagem", "Custo (R$)": 0.0,
-                "Qtd Containers": qtd_containers, "Qtd Pallets": 0, "Qtd Caixas/Outros": 0,
+                "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                 "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
             })
 
