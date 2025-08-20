@@ -211,6 +211,7 @@ with st.container(border=True):
     custos_por_servico = {}
     discriminacao = []
     custo_servicos = 0.0
+    receita_total = 0.0 # Inicializa a variável de receita total
 
     # --- Expansores para cada tipo de serviço ---
     with st.expander("📥 Recebimento"):
@@ -459,6 +460,22 @@ with st.container(border=True):
                     "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
                 })
 
+        # NOVO CÓDIGO: Adicionando a receita de Ad Valorem
+        if st.checkbox("Ad Valorem", key="arm_advalorem"):
+            servicos_selecionados.append("Ad Valorem")
+            receita_ad_valorem = (0.10 / 100) * valor_carga * qtd_containers
+            receita_total += receita_ad_valorem
+            
+            # Adicionando a receita como uma entrada negativa para o gráfico de custos
+            custos_por_servico["Ad Valorem (Receita)"] = -receita_ad_valorem
+
+            discriminacao.append({
+                "Serviço": "Ad Valorem", "Função": "N/A", "Custo (R$)": 0.0,
+                "Qtd Containers": qtd_containers, "Qtd Pallets": 0, "Qtd Caixas/Outros": 0,
+                "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
+            })
+
+
 # --- Painel de Resultados (apenas se houver serviços selecionados) ---
 if servicos_selecionados:
     st.markdown("---")
@@ -467,7 +484,8 @@ if servicos_selecionados:
     col_metricas, col_grafico = st.columns([1, 1.5])
 
     markup_decimal = markup_percent / 100
-    receita_total = custo_servicos * (1 + markup_decimal)
+    # A receita total agora é a soma do custo com markup + a receita de Ad Valorem
+    receita_total += custo_servicos * (1 + markup_decimal)
     lucro_total = receita_total - custo_servicos
 
     with col_metricas:
@@ -494,11 +512,15 @@ if servicos_selecionados:
         st.subheader("Distribuição de Custos")
         df_custos = pd.DataFrame(list(custos_por_servico.items()), columns=['Serviço', 'Custo'])
         if not df_custos.empty:
-            fig, ax = plt.subplots(figsize=(2, 2))
+            # Filtra apenas os custos positivos para o gráfico de pizza
             df_custos_final = df_custos[df_custos['Custo'] > 0]
-            ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 9})
-            ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
-            st.pyplot(fig)
+            if not df_custos_final.empty:
+                fig, ax = plt.subplots(figsize=(2, 2))
+                ax.pie(df_custos_final['Custo'], labels=df_custos_final['Serviço'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 9})
+                ax.axis('equal') # Garante que o gráfico de pizza seja um círculo.
+                st.pyplot(fig)
+            else:
+                st.info("Nenhum serviço com custo selecionado para o gráfico de pizza.")
         else:
             st.info("Nenhum serviço selecionado para calcular a distribuição de custos.")
 
@@ -509,8 +531,14 @@ if servicos_selecionados:
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
             
-            # NOVO CÓDIGO: Calcula a receita para cada item da discriminação
-            df_discriminacao['Receita (R$)'] = df_discriminacao['Custo (R$)'] * (1 + markup_decimal)
+            # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
+            def calcular_receita(row):
+                if row['Serviço'] == 'Ad Valorem':
+                    return (0.10 / 100) * valor_carga * qtd_containers
+                else:
+                    return row['Custo (R$)'] * (1 + markup_decimal)
+            
+            df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
 
             df_discriminacao = df_discriminacao[[
                 "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
