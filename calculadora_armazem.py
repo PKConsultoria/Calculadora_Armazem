@@ -463,7 +463,7 @@ with st.container(border=True):
         # NOVO CÓDIGO: Adicionando a receita de Ad Valorem
         if st.checkbox("Ad Valorem", key="arm_advalorem"):
             servicos_selecionados.append("Ad Valorem")
-            receita_ad_valorem = 0.1 * valor_carga * qtd_containers
+            receita_ad_valorem = (0.1 / 100) * valor_carga * qtd_containers
             receita_total += receita_ad_valorem
             
             # Adicionando a receita como uma entrada negativa para o gráfico de custos
@@ -534,7 +534,7 @@ if servicos_selecionados:
             # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
-                    return 0.1 * valor_carga * qtd_containers
+                    return (0.1 / 100) * valor_carga * qtd_containers
                 else:
                     return row['Custo (R$)'] * (1 + markup_decimal)
             
