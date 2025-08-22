@@ -45,7 +45,7 @@ with st.container(border=True):
     col1, col2 = st.columns(2)
     with col1:
         tipo_carga = st.selectbox("Tipo de Carga", ["Batida", "Palletizada"])
-        qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, value=30.0, step=1)
+        qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, value=30, step=1)
    
     with col2:
         qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
