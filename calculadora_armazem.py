@@ -36,7 +36,7 @@ with st.sidebar:
     
     st.subheader("💰 Estratégia de Preço")
     advalorem_percent = st.slider("Ad Valorem (%)", min_value=0.0, max_value=3.0, value=0.1, step=0.01, format="%.2f%%")
-    markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=20.0, step=0.5, format="%.1f%%")
+    markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=25.5, step=0.5, format="%.1f%%")
     
 
 # --- Container principal para o corpo da aplicação ---
