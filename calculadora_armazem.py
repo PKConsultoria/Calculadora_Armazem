@@ -170,13 +170,9 @@ with st.container(border=True):
         ]
         produto = st.selectbox("Tipo de Produto", produto_opcoes)
         # O st.number_input permanece o mesmo
-        valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
-
-        # Formata o número com separador de milhar para exibição
-        valor_formatado = f"R$ {valor_carga:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-        # Exibe o valor formatado
-        st.write(f"O valor digitado é: {valor_formatado}")
+        valor_carga_str = st.text_input("Valor da Carga (R$)", value="200.000,00")
+        # Converte para número (remove pontos e troca vírgula por ponto)
+        valor_carga = float(valor_carga_str.replace(".", "").replace(",", "."))        valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
 
         st.subheader("📦 Dimensões da Carga")
         col_dim1, col_dim2, col_dim3, col_dim4 = st.columns(4)
