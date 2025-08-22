@@ -440,7 +440,7 @@ with st.container(border=True):
                             "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0, "Demanda (h)": tempo_horas_total,
                             "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
                         })
-
+                
                 # --- Etiquetagem de Expedição ---
                 elif "Etiquetagem" in nome:
                     salario_assistente = 3713.31
