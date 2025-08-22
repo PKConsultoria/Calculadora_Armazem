@@ -197,9 +197,8 @@ with st.container(border=True):
             "Palletizada": ["Descarga Palletizada", "Etiquetagem Palletizada", "TFA"]
         },
         "Expedição": {
-            # Stretch agora é um serviço independente logo abaixo de Carregamento
-            "Batida": ["Separação Batida", "Carregamento Batido", "Stretch", "Etiquetagem Batida"],
-            "Palletizada": ["Separação Palletizada", "Carregamento Palletizado", "Stretch", "Etiquetagem Palletizada"]
+            "Batida": ["Separação Batida", "Carregamento Batido", "Etiquetagem Batida"],
+            "Palletizada": ["Separação Palletizada", "Carregamento Palletizado", "Etiquetagem Palletizada"]
         },
         "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
     }
@@ -242,7 +241,6 @@ with st.container(border=True):
                         {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
                         {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
                         {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120}
-                        # Stretch removido daqui e transformado em serviço independente na seção Expedição
                     ]
                     
                     unidades_totais = qtd_pallets + qtd_caixas_outros
@@ -253,10 +251,7 @@ with st.container(border=True):
                         
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         
-                        if func["nome"] == "Stretch":
-                            # (mantido aqui apenas por referência - não será executado pois Stretch foi removido da lista)
-                            custo = func["salario"] * qtd_pallets * qtd_containers
-                        elif func["nome"] == "Mão de Obra de Terceiros":
+                        if func["nome"] == "Mão de Obra de Terceiros":
                             custo = func["salario"] * qtd_containers
                         elif func["nome"] == "Máquina Elétrica":
                             tempo_horas = func["tempo"] / 60
@@ -345,6 +340,27 @@ with st.container(border=True):
                         "HeadCount (h disponível)": headcount_tfa_val, "Taxa Ocupação": taxa_ocupacao_tfa
                     })
 
+    # --- Adiciona o serviço Stretch na seção de Recebimento ---
+    if st.checkbox("Stretch", key="rec_stretch"):
+        servicos_selecionados.append("Stretch")
+        salario_stretch = 6.85
+        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
+        custo = salario_stretch * qtd_pallets * qtd_containers
+        taxa_ocupacao = 0.0
+        tempo_container_h = 0
+        demanda_h = 0
+
+        custo_servicos += custo
+        if "Stretch" not in custos_por_servico:
+            custos_por_servico["Stretch"] = 0
+        custos_por_servico["Stretch"] += custo
+        discriminacao.append({
+            "Serviço": "Stretch", "Função": "Stretch", "Custo (R$)": custo,
+            "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
+            "Tempo/Container (h)": tempo_container_h, "Demanda (h)": demanda_h,
+            "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0, "Taxa Ocupação": taxa_ocupacao
+        })
+
 
     with st.expander("📦 Expedição"):
         for nome in servicos["Expedição"][tipo_carga]:
@@ -425,27 +441,6 @@ with st.container(border=True):
                             "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
                         })
 
-                # --- Stretch (serviço independente, logo abaixo de Carregamento) ---
-                elif nome == "Stretch":
-                    # Mantém exatamente o mesmo cálculo que era feito dentro de Descarga: 6.85 * pallets * containers
-                    salario_stretch = 6.85
-                    headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-                    custo = salario_stretch * qtd_pallets * qtd_containers
-                    taxa_ocupacao = 0.0  # não depende de tempo
-                    tempo_container_h = 0
-                    demanda_h = 0
-
-                    custo_servicos += custo
-                    if nome not in custos_por_servico:
-                        custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo
-                    discriminacao.append({
-                        "Serviço": nome, "Função": "Stretch", "Custo (R$)": custo,
-                        "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": tempo_container_h, "Demanda (h)": demanda_h,
-                        "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0, "Taxa Ocupação": taxa_ocupacao
-                    })
-                
                 # --- Etiquetagem de Expedição ---
                 elif "Etiquetagem" in nome:
                     salario_assistente = 3713.31
