@@ -172,7 +172,7 @@ with st.container(border=True):
         # O st.number_input permanece o mesmo
         valor_carga_str = st.text_input("Valor da Carga (R$)", value="200.000,00")
         # Converte para número (remove pontos e troca vírgula por ponto)
-        valor_carga = float(valor_carga_str.replace(".", "").replace(",", "."))        valor_carga = st.number_input("Valor da Carga (R$)", min_value=0.0, step=100.0, format="%.2f")
+        valor_carga = float(valor_carga_str.replace(".", "").replace(",", "."))
 
         st.subheader("📦 Dimensões da Carga")
         col_dim1, col_dim2, col_dim3, col_dim4 = st.columns(4)
