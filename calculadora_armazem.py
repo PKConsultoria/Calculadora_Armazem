@@ -240,7 +240,8 @@ with st.container(border=True):
                         {"nome": "Analista", "salario": 4780.41, "tempo": 10},
                         {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
                         {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120}
+                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
+                        {"nome": "Stretch", "salario": 6.85, "tempo": 0}
                     ]
                     
                     unidades_totais = qtd_pallets + qtd_caixas_outros
@@ -251,7 +252,9 @@ with st.container(border=True):
                         
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         
-                        if func["nome"] == "Mão de Obra de Terceiros":
+                        if func["nome"] == "Stretch":
+                            custo = func["salario"] * qtd_pallets * qtd_containers
+                        elif func["nome"] == "Mão de Obra de Terceiros":
                             custo = func["salario"] * qtd_containers
                         elif func["nome"] == "Máquina Elétrica":
                             tempo_horas = func["tempo"] / 60
@@ -339,27 +342,6 @@ with st.container(border=True):
                         "Tempo/Container (h)": tempo_conferente_tfa_h, "Demanda (h)": demanda_horas_tfa,
                         "HeadCount (h disponível)": headcount_tfa_val, "Taxa Ocupação": taxa_ocupacao_tfa
                     })
-
-    # --- Adiciona o serviço Stretch na seção de Recebimento ---
-    if st.checkbox("Stretch", key="rec_stretch"):
-        servicos_selecionados.append("Stretch")
-        salario_stretch = 6.85
-        headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
-        custo = salario_stretch * qtd_pallets * qtd_containers
-        taxa_ocupacao = 0.0
-        tempo_container_h = 0
-        demanda_h = 0
-
-        custo_servicos += custo
-        if "Stretch" not in custos_por_servico:
-            custos_por_servico["Stretch"] = 0
-        custos_por_servico["Stretch"] += custo
-        discriminacao.append({
-            "Serviço": "Stretch", "Função": "Stretch", "Custo (R$)": custo,
-            "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-            "Tempo/Container (h)": tempo_container_h, "Demanda (h)": demanda_h,
-            "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0, "Taxa Ocupação": taxa_ocupacao
-        })
 
 
     with st.expander("📦 Expedição"):
@@ -464,7 +446,7 @@ with st.container(border=True):
 
                     # Custo da Etiqueta
                     custo_etiqueta_unitario = 0.06
-                    custo_etiquetas = custo_etiqueta_unitario * qtd_containers * (qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets)
+                    custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_caixas_outros
                     custo_servicos += custo_etiquetas
                     if nome not in custos_por_servico:
                          custos_por_servico[nome] = 0
