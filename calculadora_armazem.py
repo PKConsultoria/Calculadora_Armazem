@@ -35,6 +35,7 @@ with st.sidebar:
     eficiencia = st.number_input("Eficiência (%)", min_value=0, max_value=100, value=75, step=1)
     
     st.subheader("💰 Estratégia de Preço")
+    custo_pbr = st.number_input("Custo PBR (R$)", min_value=0.0, value=1.32, step=0.01, format="%.2f")
     advalorem_percent = st.slider("Ad Valorem (%)", min_value=0.0, max_value=3.0, value=0.1, step=0.01, format="%.2f%%")
     markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=25.5, step=0.5, format="%.1f%%")
     
@@ -476,7 +477,7 @@ with st.container(border=True):
         for nome in servicos["Armazenagem"]:
             if st.checkbox(nome, key=f"arm_{nome}"):
                 servicos_selecionados.append(nome)
-                custo = valores_servicos[nome]
+                custo = custo_pbr * 30
                 custo_servicos += custo
                 if nome not in custos_por_servico:
                      custos_por_servico[nome] = 0
