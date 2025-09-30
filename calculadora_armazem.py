@@ -553,7 +553,7 @@ with st.container(border=True):
             custos_por_servico["Ad Valorem (Receita)"] = -receita_ad_valorem
 
             discriminacao.append({
-                "Serviço": "Ad Valorem", "Função": "Armazenagem", "Custo (R$)": 0.0,
+                "Serviço": "Ad Valorem", "Função": "Receita", "Custo (R$)": 0.0,
                 "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                 "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
             })
@@ -614,6 +614,26 @@ if servicos_selecionados:
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
             
+            # NOVO CÓDIGO: Mapeamento dos serviços para categorias (Serviço Mãe)
+            
+            # Dicionário de mapeamento Categoria-Serviço
+            categoria_map = {}
+            for categoria, tipos in servicos.items():
+                if isinstance(tipos, dict):
+                    # Para Recebimento e Expedição, que têm subtipos por tipo_carga
+                    for sub_servico in tipos[tipo_carga]:
+                        categoria_map[sub_servico] = categoria
+                elif isinstance(tipos, list):
+                    # Para Armazenagem, que tem lista direta
+                    for sub_servico in tipos:
+                        categoria_map[sub_servico] = categoria
+            
+            # Adiciona Ad Valorem (que é um serviço de receita)
+            categoria_map["Ad Valorem"] = "Armazenagem"
+            # Adiciona a nova coluna 'Categoria'
+            df_discriminacao['Categoria'] = df_discriminacao['Serviço'].map(categoria_map)
+            # Fim do NOVO CÓDIGO
+            
             # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
@@ -623,8 +643,9 @@ if servicos_selecionados:
             
             df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
 
+            # ATUALIZADO: Inclui a coluna 'Categoria'
             df_discriminacao = df_discriminacao[[
-                "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
+                "Categoria", "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
                 "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)", "Receita (R$)"
             ]]
             
@@ -696,8 +717,8 @@ if servicos_selecionados:
             # Formata os dados para a tabela
             df_formatado = df_discriminacao.copy()
 
-            # Define as colunas a serem exibidas na tabela
-            cols_to_display = ["Serviço", "Função", "Demanda (h)", "Custo (R$)", "Receita (R$)"]
+            # ATUALIZADO: Inclui a coluna 'Categoria'
+            cols_to_display = ["Categoria", "Serviço", "Função", "Demanda (h)", "Custo (R$)", "Receita (R$)"]
             
             # CORREÇÃO: Cria uma cópia explícita do DataFrame para evitar o SettingWithCopyWarning
             df_display = df_formatado[cols_to_display].copy()
