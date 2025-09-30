@@ -19,7 +19,7 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="
 
 # --- Título principal e subtítulo ---
 st.title("🏭 Calculadora de Receitas e Custos - Armazém")
-st.markdown("Open Beta V0.3 - Versão Corrigida")
+st.markdown("Open Beta V0.3 - Versão Corrigida com Margem")
 
 # --- Barra Lateral para informações e métricas ---
 with st.sidebar:
@@ -288,7 +288,6 @@ with st.container(border=True):
                             demanda_horas = tempo_horas * qtd_containers
                             headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                             # CORREÇÃO: Custo da máquina é rateado pela taxa de ocupação do recurso no mês
-                            taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
                             custo = func["salario"] * taxa_ocupacao * demanda_horas # Correção na fórmula de custo da máquina
                         else: # Mão de obra (Conferente, Analista, Supervisor)
                             tempo_por_container_h = func["tempo"] / 60
@@ -581,12 +580,18 @@ if servicos_selecionados:
     # A receita total agora é a soma do custo com markup + a receita de Ad Valorem
     receita_total += custo_servicos * (1 + markup_decimal)
     lucro_total = receita_total - custo_servicos
+    
+    # NOVO: Cálculo da Margem Percentual
+    margem_percentual = (lucro_total / receita_total) * 100 if receita_total > 0 else 0
 
     with col_metricas:
         st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
         
         st.metric("💲 **Receita Total (com markup)**", f"R$ {receita_total:,.2f}")
         st.metric("📊 **Lucro Bruto**", f"R$ {lucro_total:,.2f}")
+        # NOVO: Métrica de Margem
+        st.metric("🎯 **Margem (%)**", f"{margem_percentual:,.2f}%")
+
 
         total_containers = qtd_containers
         total_pallets = qtd_containers * qtd_pallets
@@ -694,7 +699,7 @@ if servicos_selecionados:
         elementos.append(Paragraph("Relatório - Calculadora Armazém", styles['Title']))
         elementos.append(Spacer(1, 18))
 
-        # Seção de Informações Básicas (MANTIDA)
+        # Seção de Informações Básicas (CORRIGIDO: Tipo de Carga)
         elementos.append(Paragraph("<b>Informações da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
         elementos.append(Paragraph(f"<b>Armazém:</b> {armazem}", styles['Normal']))
@@ -726,12 +731,13 @@ if servicos_selecionados:
         elementos.append(Paragraph(f"<b>Markup:</b> {markup_percent:,.1f}%", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
-        # Seção de Métricas Principais (MANTIDA)
+        # Seção de Métricas Principais (INCLUINDO MARGEM)
         elementos.append(Paragraph("<b>Métricas Financeiras:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
         elementos.append(Paragraph(f"<b>Receita Total:</b> R$ {receita_total:,.2f}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Custo Total:</b> R$ {custo_servicos:,.2f}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Lucro Bruto:</b> R$ {lucro_total:,.2f}", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Margem (%):</b> {margem_percentual:,.2f}%", styles['Normal'])) # NOVO
         elementos.append(Spacer(1, 12))
 
         # Seção de Totais da Operação (MANTIDA)
@@ -744,7 +750,7 @@ if servicos_selecionados:
             elementos.append(Paragraph(f"{embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
         
-        # NOVO: Seção de Resumo por Categoria
+        # NOVO: Seção de Resumo por Categoria (INCLUINDO MARGEM)
         elementos.append(Paragraph("<b>Resumo Financeiro por Categoria:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
 
@@ -756,20 +762,28 @@ if servicos_selecionados:
             ).reset_index()
 
             df_categoria_summary['Lucro (R$)'] = df_categoria_summary['Receita (R$)'] - df_categoria_summary['Custo (R$)']
+            # NOVO: Margem por Categoria
+            df_categoria_summary['Margem (%)'] = (df_categoria_summary['Lucro (R$)'] / df_categoria_summary['Receita (R$)']) * 100
+            df_categoria_summary['Margem (%)'] = df_categoria_summary['Margem (%)'].fillna(0) # Trata NaN (0/0)
+            df_categoria_summary.loc[df_categoria_summary['Receita (R$)'] == 0, 'Margem (%)'] = 0 # Trata divisão por zero que resulta em Inf ou -Inf
 
             # Formatação dos dados para a tabela PDF
-            cols_to_display_summary = ["Categoria", "Receita (R$)", "Custo (R$)", "Lucro (R$)"]
+            cols_to_display_summary = ["Categoria", "Receita (R$)", "Custo (R$)", "Lucro (R$)", "Margem (%)"] # NOVO
             df_display_summary = df_categoria_summary[cols_to_display_summary].copy()
 
             # Formata as colunas para strings
             df_display_summary["Receita (R$)"] = df_display_summary["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Lucro (R$)"] = df_display_summary["Lucro (R$)"].apply(lambda x: f"R$ {x:,.2f}")
+            # NOVO: Formata Margem
+            df_display_summary["Margem (%)"] = df_categoria_summary["Margem (%)"].apply(lambda x: f"{x:,.2f}%")
+
 
             tabela_dados = [df_display_summary.columns.tolist()] + df_display_summary.values.tolist()
             
             # Criação da Tabela PDF
-            tabela = Table(tabela_dados, colWidths=[2*inch, 1*inch, 1*inch, 1*inch]) # Ajusta largura
+            # Ajusta colWidths para 5 colunas: Categoria (1.75in), 3x Dinheiro (0.9in cada), Margem (0.75in)
+            tabela = Table(tabela_dados, colWidths=[1.75*inch, 0.9*inch, 0.9*inch, 0.9*inch, 0.75*inch]) 
             tabela.setStyle(TableStyle([
                 ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
                 ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
