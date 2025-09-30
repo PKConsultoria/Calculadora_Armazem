@@ -642,11 +642,11 @@ if servicos_selecionados:
             # CORREÇÃO: Mapeamento manual para os serviços de Etiquetagem para evitar sobrescrita
             # Os serviços de Etiquetagem agora têm "(Recebimento)" ou "(Expedição)" no nome na tabela 'discriminacao'
             if tipo_carga == "Batida":
-                categoria_map["Etiquetagem Batida (Recebimento)"] = "Recebimento"
-                categoria_map["Etiquetagem Batida (Expedição)"] = "Expedição"
+                categoria_map["Etiquetagem Batida R"] = "Recebimento"
+                categoria_map["Etiquetagem Batida E"] = "Expedição"
             elif tipo_carga == "Palletizada":
-                categoria_map["Etiquetagem Palletizada (Recebimento)"] = "Recebimento"
-                categoria_map["Etiquetagem Palletizada (Expedição)"] = "Expedição"
+                categoria_map["Etiquetagem Palletizada R"] = "Recebimento"
+                categoria_map["Etiquetagem Palletizada E"] = "Expedição"
             
             # Adiciona Ad Valorem (que é um serviço de receita)
             categoria_map["Ad Valorem"] = "Armazenagem"
