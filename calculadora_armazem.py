@@ -684,7 +684,7 @@ if servicos_selecionados:
         buffer = BytesIO()
 
         # Documento PDF
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=33, bottomMargin=33)
         elementos = []
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Heading3Bold', fontName='Helvetica-Bold', fontSize=14, leading=16))
