@@ -19,7 +19,7 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="
 
 # --- Título principal e subtítulo ---
 st.title("🏭 Calculadora de Receitas e Custos - Armazém")
-st.markdown("Open Beta V0.2")
+st.markdown("Open Beta V0.3")
 
 # --- Barra Lateral para informações e métricas ---
 with st.sidebar:
@@ -37,7 +37,7 @@ with st.sidebar:
     st.subheader("💰 Estratégia de Preço")
     custo_pbr = st.number_input("Custo PBR (R$)", min_value=0.0, value=1.32, step=0.01, format="%.2f")
     advalorem_percent = st.slider("Ad Valorem (%)", min_value=0.0, max_value=3.0, value=0.1, step=0.01, format="%.2f%%")
-    markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=25.5, step=0.5, format="%.1f%%")
+    markup_percent = st.slider("Markup (%)", min_value=0.0, max_value=100.0, value=30.0, step=0.5, format="%.1f%%")
     
 
 # --- Container principal para o corpo da aplicação ---
@@ -193,11 +193,16 @@ with st.container(border=True):
     tempo_exec = tempos_execucao.get(tipo_carga, 0)
     st.info(f"⏱️ Tempo estimado de execução por operação: **{tempo_exec} minutos**")
     
+    # Valores de tempo para Descarga/Carregamento
+    tempo_descarga_min = 120 if tipo_carga == "Batida" else 30
+    tempo_carregamento_min = 120 if tipo_carga == "Batida" else 30
+    
     # Serviços por tipo de carga
     servicos = {
         "Recebimento": {
-            "Batida": ["Descarga Batida", "Etiquetagem Batida", "TFA", "Stretch"], # Adiciona "Stretch" aqui
-            "Palletizada": ["Descarga Palletizada", "Etiquetagem Palletizada", "TFA", "Stretch"] # Adiciona "Stretch" aqui
+            # REMOÇÃO DO STRETCH PARA PALLETIZADA
+            "Batida": ["Descarga Batida", "Etiquetagem Batida", "TFA", "Stretch"],
+            "Palletizada": ["Descarga Palletizada", "Etiquetagem Palletizada", "TFA"]
         },
         "Expedição": {
             "Batida": ["Separação Batida", "Carregamento Batido", "Etiquetagem Batida"],
@@ -206,7 +211,7 @@ with st.container(border=True):
         "Armazenagem": ["Diária", "Pico Quinzenal", "Pico Mensal"]
     }
     
-    # Valores de cada serviço
+    # Valores de cada serviço (não alterados)
     valores_servicos = {
         "Descarga Batida": 100.0,
         "Descarga Palletizada": 80.0,
@@ -238,14 +243,36 @@ with st.container(border=True):
                 # Descarga
                 # -----------------------------
                 if "Descarga" in nome:
-                    funcoes = [
-                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
+                    # AJUSTE DE TEMPO
+                    tempo_operacao = tempo_descarga_min # 120min para Batida, 30min para Palletizada
+                    
+                    # FILTRAGEM DE FUNÇÕES PARA PALLETIZADA
+                    funcoes_base = [
+                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120}, # Tempo base a ser substituído
                         {"nome": "Analista", "salario": 4780.41, "tempo": 10},
                         {"nome": "Supervisor", "salario": 6775.58, "tempo": 45},
-                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120},
+                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120}, # Tempo base a ser substituído
+                        {"nome": "Máquina Elétrica", "salario": 47.6, "tempo": 120}, # Tempo base a ser substituído
                     ]
                     
+                    funcoes = []
+                    for func in funcoes_base:
+                        # Se for palletizada, remove Mão de Obra de Terceiros e Máquina Elétrica
+                        if tipo_carga == "Palletizada":
+                            if func["nome"] not in ["Mão de Obra de Terceiros", "Máquina Elétrica"]:
+                                # Ajusta o tempo da função para o tempo da operação Palletizada (30 min)
+                                if func["tempo"] == 120:
+                                    func["tempo"] = 30
+                                funcoes.append(func)
+                        else: # Batida - Mantém todos e o tempo é 120 min
+                            funcoes.append(func)
+                    
+                    # ATUALIZAÇÃO DO TEMPO DE MÃO DE OBRA DE TERCEIROS E MÁQUINA ELÉTRICA (para Batida, se o tempo for 120)
+                    if tipo_carga == "Batida":
+                        for func in funcoes:
+                            if func["nome"] in ["Mão de Obra de Terceiros", "Máquina Elétrica"]:
+                                func["tempo"] = tempo_operacao # Garantindo 120 min
+
                     unidades_totais = qtd_pallets + qtd_caixas_outros
                     
                     for func in funcoes:
@@ -255,8 +282,10 @@ with st.container(border=True):
                         headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                         
                         if func["nome"] == "Mão de Obra de Terceiros":
+                            # O custo de Mão de Obra de Terceiros é um custo fixo por container
                             custo = func["salario"] * qtd_containers
                         elif func["nome"] == "Máquina Elétrica":
+                            # Custo da Máquina por hora efetiva
                             tempo_horas = func["tempo"] / 60
                             demanda_horas = tempo_horas * qtd_containers
                             headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
@@ -266,6 +295,7 @@ with st.container(border=True):
                             tempo_por_container_h = func["tempo"] / 60
                             tempo_horas_total = tempo_por_container_h * qtd_containers
                             taxa_ocupacao = (tempo_horas_total / headcount_val) if headcount_val > 0 else 0
+                            # Custo da Mão de Obra é o salário rateado pela taxa de ocupação do recurso no mês
                             custo = func["salario"] * taxa_ocupacao
 
                         custo_servicos += custo
@@ -276,13 +306,13 @@ with st.container(border=True):
                             "Serviço": nome, "Função": func["nome"], "Custo (R$)": custo,
                             "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                             "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
-                            "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 else 0,
-                            "HeadCount (h disponível)": headcount_val if headcount_val > 0 else 0,
-                            "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and taxa_ocupacao > 0 else 0
+                            "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 or func["nome"] not in ["Mão de Obra de Terceiros", "Máquina Elétrica"] else (func["tempo"] / 60) * qtd_containers if func["nome"] == "Máquina Elétrica" else 0,
+                            "HeadCount (h disponível)": headcount_val if headcount_val > 0 and func["nome"] not in ["Mão de Obra de Terceiros"] else 0,
+                            "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and func["nome"] not in ["Mão de Obra de Terceiros"] else 0
                         })
                 
                 # -----------------------------
-                # Etiquetagem e Custo de Etiqueta
+                # Etiquetagem e Custo de Etiqueta (sem alteração)
                 # -----------------------------
                 elif "Etiquetagem" in nome:
                     unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
@@ -321,7 +351,7 @@ with st.container(border=True):
                     })
 
                 # -----------------------------
-                # TFA
+                # TFA (sem alteração)
                 # -----------------------------
                 elif nome == "TFA":
                     salario_conferente_tfa = 4052.17
@@ -344,7 +374,7 @@ with st.container(border=True):
                     })
                 
                 # -----------------------------
-                # NOVO CÓDIGO: Stretch
+                # Stretch (agora só aparece para Batida)
                 # -----------------------------
                 elif nome == "Stretch":
                     custo_unitario_stretch = 6.85
@@ -366,7 +396,7 @@ with st.container(border=True):
             if st.checkbox(nome, key=f"exp_{nome}"):
                 servicos_selecionados.append(nome)
                 
-                # --- Separação ---
+                # --- Separação (sem alteração) ---
                 if "Separação" in nome:
                     funcoes_separacao = [
                         {"nome": "Conferente", "salario": 4052.17, "tempo": 10}, # 10s
@@ -402,13 +432,36 @@ with st.container(border=True):
                 
                 # --- Carregamento ---
                 elif "Carregamento" in nome:
-                    funcoes_carregamento = [
-                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120},
+                    # AJUSTE DE TEMPO
+                    tempo_operacao = tempo_carregamento_min # 120min para Batida, 30min para Palletizada
+                    
+                    # FILTRAGEM DE FUNÇÕES PARA PALLETIZADA
+                    funcoes_carregamento_base = [
+                        {"nome": "Conferente", "salario": 4052.17, "tempo": 120}, # Tempo base a ser substituído
                         {"nome": "Analista", "salario": 4780.41, "tempo": 10},
                         {"nome": "Coordenador", "salario": 7774.15, "tempo": 45},
-                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120},
-                        {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120},
+                        {"nome": "Mão de Obra de Terceiros", "salario": 330, "tempo": 120}, # Tempo base a ser substituído
+                        {"nome": "Máquina GLP", "salario": 64.72, "tempo": 120}, # Tempo base a ser substituído
                     ]
+                    
+                    funcoes_carregamento = []
+                    for func in funcoes_carregamento_base:
+                        # Se for palletizada, remove Mão de Obra de Terceiros e Máquina GLP
+                        if tipo_carga == "Palletizada":
+                            if func["nome"] not in ["Mão de Obra de Terceiros", "Máquina GLP"]:
+                                # Ajusta o tempo da função para o tempo da operação Palletizada (30 min)
+                                if func["tempo"] == 120:
+                                    func["tempo"] = 30
+                                funcoes_carregamento.append(func)
+                        else: # Batida - Mantém todos e o tempo é 120 min
+                            funcoes_carregamento.append(func)
+                            
+                    # ATUALIZAÇÃO DO TEMPO DE MÃO DE OBRA DE TERCEIROS E MÁQUINA GLP (para Batida, se o tempo for 120)
+                    if tipo_carga == "Batida":
+                        for func in funcoes_carregamento:
+                            if func["nome"] in ["Mão de Obra de Terceiros", "Máquina GLP"]:
+                                func["tempo"] = tempo_operacao # Garantindo 120 min
+                    
                     headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                     
                     for func in funcoes_carregamento:
@@ -436,11 +489,13 @@ with st.container(border=True):
                         discriminacao.append({
                             "Serviço": nome, "Função": func["nome"], "Custo (R$)": custo,
                             "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                            "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0, "Demanda (h)": tempo_horas_total,
-                            "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
+                            "Tempo/Container (h)": func["tempo"] / 60 if func["tempo"] > 0 else 0,
+                            "Demanda (h)": tempo_horas_total if tempo_horas_total > 0 or func["nome"] not in ["Mão de Obra de Terceiros", "Máquina GLP"] else (func["tempo"] / 60) * qtd_containers if func["nome"] == "Máquina GLP" else 0,
+                            "HeadCount (h disponível)": headcount_val if headcount_val > 0 and func["nome"] not in ["Mão de Obra de Terceiros"] else 0,
+                            "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and func["nome"] not in ["Mão de Obra de Terceiros"] else 0
                         })
                 
-                # --- Etiquetagem de Expedição ---
+                # --- Etiquetagem de Expedição (sem alteração) ---
                 elif "Etiquetagem" in nome:
                     salario_assistente = 3713.31
                     unidades_para_etiquetagem_exp = qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets
