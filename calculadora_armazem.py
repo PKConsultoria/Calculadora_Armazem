@@ -700,7 +700,7 @@ if servicos_selecionados:
         elementos.append(Paragraph(f"<b>Armazém:</b> {armazem}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Cliente:</b> {cliente}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Vendedor:</b> {vendedor}", styles['Normal']))
-        elementos.append(Paragraph(f"<b>Tipo de Carga:</b> {carga}", styles['Normal']))      
+        elementos.append(Paragraph(f"<b>Tipo de Carga:</b> {tipo_carga}", styles['Normal']))      
         elementos.append(Paragraph(f"<b>Tipo de Produto:</b> {produto}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Peso por Container:</b> {peso_por_container:,.2f} toneladas", styles['Normal']))
         elementos.append(Paragraph(f"<b>Valor da Carga:</b> R$ {valor_carga:,.2f}", styles['Normal']))
