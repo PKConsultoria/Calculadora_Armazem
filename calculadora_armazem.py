@@ -311,12 +311,12 @@ with st.container(border=True):
                         })
                 
                 # -----------------------------
-                # Etiquetagem e Custo de Etiqueta (CORREÇÃO DE CATEGORIA E NOME)
+                # Etiquetagem e Custo de Etiqueta
                 # -----------------------------
                 elif "Etiquetagem" in nome:
                     unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
-                    # ATUALIZADO: Diferenciação do nome do serviço para Recebimento (sufixo R)
+                    # Diferenciação do nome do serviço para Recebimento (sufixo R)
                     nome_rec = f"{nome} R"
                     
                     # Custo do Assistente de Etiquetagem
@@ -499,10 +499,10 @@ with st.container(border=True):
                             "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and func["nome"] not in ["Mão de Obra de Terceiros"] else 0
                         })
                 
-                # --- Etiquetagem de Expedição (CORREÇÃO DE CATEGORIA E NOME) ---
+                # --- Etiquetagem de Expedição ---
                 elif "Etiquetagem" in nome:
                     
-                    # ATUALIZADO: Diferenciação do nome do serviço para Expedição (sufixo E)
+                    # Diferenciação do nome do serviço para Expedição (sufixo E)
                     nome_exp = f"{nome} E"
                     
                     salario_assistente = 3713.31
@@ -619,56 +619,50 @@ if servicos_selecionados:
             st.info("Nenhum serviço selecionado para calcular a distribuição de custos.")
 
     # --- Tabela de discriminação detalhada ---
-    with st.expander("📋 Ver Discriminação Detalhada dos Custos e Receitas"):
-        if discriminacao:
-            df_discriminacao = pd.DataFrame(discriminacao)
-            df_discriminacao = df_discriminacao.fillna(0)
-            df_discriminacao.index += 1
-            
-            # Dicionário de mapeamento Categoria-Serviço
-            categoria_map = {}
-            for categoria, tipos in servicos.items():
-                if isinstance(tipos, dict):
-                    # Para Recebimento e Expedição, que têm subtipos por tipo_carga
-                    for sub_servico in tipos[tipo_carga]:
-                        # Se o serviço for "Etiquetagem", ele será tratado manualmente abaixo
-                        if "Etiquetagem" not in sub_servico:
-                            categoria_map[sub_servico] = categoria # Mapeia os serviços únicos (Descarga, TFA, Separação, Carregamento, Stretch)
-                elif isinstance(tipos, list):
-                    # Para Armazenagem
-                    for sub_servico in tipos:
+    if discriminacao:
+        # Dicionário de mapeamento Categoria-Serviço (necessário para o DF e PDF)
+        categoria_map = {}
+        for categoria, tipos in servicos.items():
+            if isinstance(tipos, dict):
+                for sub_servico in tipos[tipo_carga]:
+                    if "Etiquetagem" not in sub_servico:
                         categoria_map[sub_servico] = categoria
-            
-            # ATUALIZADO: Mapeamento manual para os serviços de Etiquetagem com o novo nome simplificado (R ou E)
-            if tipo_carga == "Batida":
-                categoria_map["Etiquetagem Batida R"] = "Recebimento"
-                categoria_map["Etiquetagem Batida E"] = "Expedição"
-            elif tipo_carga == "Palletizada":
-                categoria_map["Etiquetagem Palletizada R"] = "Recebimento"
-                categoria_map["Etiquetagem Palletizada E"] = "Expedição"
-            
-            # Adiciona Ad Valorem (que é um serviço de receita)
-            categoria_map["Ad Valorem"] = "Armazenagem"
-            # Adiciona a nova coluna 'Categoria'
-            df_discriminacao['Categoria'] = df_discriminacao['Serviço'].map(categoria_map)
-            
-            # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
-            def calcular_receita(row):
-                if row['Serviço'] == 'Ad Valorem':
-                    return (advalorem_percent / 100) * valor_carga * qtd_containers
-                else:
-                    # Verifica se é um custo (Custo > 0) para aplicar o markup. Se for Ad Valorem (Custo=0.0), retorna o custo * (1+markup) que é 0
-                    return row['Custo (R$)'] * (1 + markup_decimal)
-            
-            df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
+            elif isinstance(tipos, list):
+                for sub_servico in tipos:
+                    categoria_map[sub_servico] = categoria
+        
+        # Mapeamento manual para os serviços de Etiquetagem com o novo nome simplificado (R ou E)
+        if tipo_carga == "Batida":
+            categoria_map["Etiquetagem Batida R"] = "Recebimento"
+            categoria_map["Etiquetagem Batida E"] = "Expedição"
+        elif tipo_carga == "Palletizada":
+            categoria_map["Etiquetagem Palletizada R"] = "Recebimento"
+            categoria_map["Etiquetagem Palletizada E"] = "Expedição"
+        
+        # Adiciona Ad Valorem
+        categoria_map["Ad Valorem"] = "Armazenagem"
+        
+        # Cria o DataFrame de Discriminação e adiciona a Categoria
+        df_discriminacao = pd.DataFrame(discriminacao)
+        df_discriminacao = df_discriminacao.fillna(0)
+        df_discriminacao.index += 1
+        df_discriminacao['Categoria'] = df_discriminacao['Serviço'].map(categoria_map)
+        
+        def calcular_receita(row):
+            if row['Serviço'] == 'Ad Valorem':
+                return (advalorem_percent / 100) * valor_carga * qtd_containers
+            else:
+                return row['Custo (R$)'] * (1 + markup_decimal)
+        
+        df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
 
-            # ATUALIZADO: Inclui a coluna 'Categoria'
-            df_discriminacao = df_discriminacao[[
+        # Exibe a tabela detalhada no Streamlit (MANTIDA)
+        with st.expander("📋 Ver Discriminação Detalhada dos Custos e Receitas"):
+            df_discriminacao_display = df_discriminacao[[
                 "Categoria", "Serviço", "Função", "Qtd Containers", "Qtd Pallets", "Qtd Caixas/Outros",
                 "Demanda (h)", "HeadCount (h disponível)", "Taxa Ocupação", "Custo (R$)", "Receita (R$)"
             ]]
-            
-            st.dataframe(df_discriminacao.style.format({
+            st.dataframe(df_discriminacao_display.style.format({
                 "Demanda (h)": "{:.2f}",
                 "HeadCount (h disponível)": "{:.2f}",
                 "Taxa Ocupação": "{:.2f}",
@@ -678,8 +672,9 @@ if servicos_selecionados:
                 "Qtd Pallets": "{:.0f}",
                 "Qtd Caixas/Outros": "{:.0f}"
             }))
-        else:
-            st.info("Nenhuma discriminação de custos e receitas disponível.")
+    else:
+        st.info("Nenhuma discriminação de custos e receitas disponível.")
+
             
     # --- Exportar para PDF ---
     with st.container(border=True):
@@ -699,7 +694,7 @@ if servicos_selecionados:
         elementos.append(Paragraph("Relatório - Calculadora Armazém", styles['Title']))
         elementos.append(Spacer(1, 18))
 
-        # Seção de Informações Básicas
+        # Seção de Informações Básicas (MANTIDA)
         elementos.append(Paragraph("<b>Informações da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
         elementos.append(Paragraph(f"<b>Armazém:</b> {armazem}", styles['Normal']))
@@ -710,7 +705,27 @@ if servicos_selecionados:
         elementos.append(Paragraph(f"<b>Valor da Carga:</b> R$ {valor_carga:,.2f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
-        # Seção de Métricas Principais
+        # NOVO: Seção de Dimensões da Carga
+        elementos.append(Paragraph("<b>Dimensões da Carga:</b>", styles['Heading2']))
+        elementos.append(Spacer(1, 6))
+        elementos.append(Paragraph(f"<b>Comprimento:</b> {comprimento:,.2f} m", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Largura:</b> {largura:,.2f} m", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Altura:</b> {altura:,.2f} m", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Peso Total:</b> {(peso * qtd_containers):,.2f} kg", styles['Normal']))
+        elementos.append(Spacer(1, 12))
+        
+        # NOVO: Seção de Métricas Operacionais Utilizadas
+        elementos.append(Paragraph("<b>Métricas Operacionais Utilizadas:</b>", styles['Heading2']))
+        elementos.append(Spacer(1, 6))
+        elementos.append(Paragraph(f"<b>Dias Trabalhados:</b> {dias_trabalhados} dias", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Horas/Dia:</b> {horas_trabalhadas_dia:,.2f} h", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Eficiência:</b> {eficiencia}%", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Custo PBR:</b> R$ {custo_pbr:,.2f}", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Ad Valorem:</b> {advalorem_percent:,.2f}%", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Markup:</b> {markup_percent:,.1f}%", styles['Normal']))
+        elementos.append(Spacer(1, 12))
+
+        # Seção de Métricas Principais (MANTIDA)
         elementos.append(Paragraph("<b>Métricas Financeiras:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
         elementos.append(Paragraph(f"<b>Custo Total:</b> R$ {custo_servicos:,.2f}", styles['Normal']))
@@ -718,7 +733,7 @@ if servicos_selecionados:
         elementos.append(Paragraph(f"<b>Lucro Bruto:</b> R$ {lucro_total:,.2f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
-        # Seção de Totais da Operação
+        # Seção de Totais da Operação (MANTIDA)
         elementos.append(Paragraph("<b>Totais da Operação:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
         elementos.append(Paragraph(f"Containers: {total_containers:,.0f}", styles['Normal']))
@@ -727,31 +742,35 @@ if servicos_selecionados:
         if total_caixas_outros > 0:
             elementos.append(Paragraph(f"{embalagem}: {total_caixas_outros:,.0f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
-
-        # Seção de Discriminação Detalhada
-        elementos.append(Paragraph("<b>Discriminação de Custos e Receitas por Serviço:</b>", styles['Heading2']))
+        
+        # NOVO: Seção de Resumo por Categoria
+        elementos.append(Paragraph("<b>Resumo Financeiro por Categoria:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
 
         if 'df_discriminacao' in locals() and not df_discriminacao.empty:
-            # Formata os dados para a tabela
-            df_formatado = df_discriminacao.copy()
-
-            # ATUALIZADO: Inclui a coluna 'Categoria'
-            cols_to_display = ["Categoria", "Serviço", "Função", "Demanda (h)", "Custo (R$)", "Receita (R$)"]
             
-            # CORREÇÃO: Cria uma cópia explícita do DataFrame para evitar o SettingWithCopyWarning
-            df_display = df_formatado[cols_to_display].copy()
+            # CÁLCULO DO RESUMO POR CATEGORIA
+            df_categoria_summary = df_discriminacao.groupby('Categoria').agg(
+                {'Custo (R$)': 'sum', 'Receita (R$)': 'sum'}
+            ).reset_index()
+
+            df_categoria_summary['Lucro (R$)'] = df_categoria_summary['Receita (R$)'] - df_categoria_summary['Custo (R$)']
+
+            # Formatação dos dados para a tabela PDF
+            cols_to_display_summary = ["Categoria", "Custo (R$)", "Receita (R$)", "Lucro (R$)"]
+            df_display_summary = df_categoria_summary[cols_to_display_summary].copy()
 
             # Formata as colunas para strings
-            df_display["Demanda (h)"] = df_display["Demanda (h)"].apply(lambda x: f"{x:.2f}")
-            df_display["Custo (R$)"] = df_display["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
-            df_display["Receita (R$)"] = df_display["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
+            df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
+            df_display_summary["Receita (R$)"] = df_display_summary["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
+            df_display_summary["Lucro (R$)"] = df_display_summary["Lucro (R$)"].apply(lambda x: f"R$ {x:,.2f}")
 
-            tabela_dados = [df_display.columns.tolist()] + df_display.values.tolist()
-
-            tabela = Table(tabela_dados)
+            tabela_dados = [df_display_summary.columns.tolist()] + df_display_summary.values.tolist()
+            
+            # Criação da Tabela PDF
+            tabela = Table(tabela_dados, colWidths=[2*inch, 1*inch, 1*inch, 1*inch]) # Ajusta largura
             tabela.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')), # Azul escuro para o cabeçalho
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
                 ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
                 ('ALIGN',(0,0),(-1,-1),'LEFT'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -759,7 +778,7 @@ if servicos_selecionados:
                 ('BOTTOMPADDING', (0,0), (-1,0), 8),
                 ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
                 ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#f2f2f2')), # Cor de fundo alternada
+                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#f2f2f2')),
             ]))
             elementos.append(tabela)
 
