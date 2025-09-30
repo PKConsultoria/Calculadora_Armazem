@@ -773,7 +773,6 @@ if servicos_selecionados:
             df_display_summary["Receita (R$)"] = df_display_summary["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Lucro (R$)"] = df_display_summary["Lucro (R$)"].apply(lambda x: f"R$ {x:,.2f}")
-            # NOVO: Formata Margem
             df_display_summary["Margem (%)"] = df_categoria_summary["Margem (%)"].apply(lambda x: f"{x:,.2f}%")
 
 
@@ -781,7 +780,7 @@ if servicos_selecionados:
             
             # Criação da Tabela PDF
             # Ajusta colWidths para 5 colunas: Categoria (1.75in), 3x Dinheiro (0.9in cada), Margem (0.75in)
-            tabela = Table(tabela_dados, colWidths=[1.50*inch, 1.30*inch, 1.30*inch, 1.30*inch, 0.75*inch]) 
+            tabela = Table(tabela_dados, colWidths=[1.50*inch, 1.30*inch, 1.30*inch, 1.30*inch, 1.00*inch]) 
             tabela.setStyle(TableStyle([
                 ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
                 ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
