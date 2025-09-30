@@ -311,11 +311,14 @@ with st.container(border=True):
                         })
                 
                 # -----------------------------
-                # Etiquetagem e Custo de Etiqueta (sem alteração)
+                # Etiquetagem e Custo de Etiqueta (CORREÇÃO DE CATEGORIA)
                 # -----------------------------
                 elif "Etiquetagem" in nome:
                     unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
+                    # NOVO: Diferenciação do nome do serviço para Recebimento
+                    nome_rec = f"{nome} (Recebimento)"
+                    
                     # Custo do Assistente de Etiquetagem
                     tempo_pallet_h = 1 / 3600
                     salario_assistente = 3713.31
@@ -326,11 +329,12 @@ with st.container(border=True):
                     custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
 
                     custo_servicos += custo_assistente
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_assistente
+                    if nome_rec not in custos_por_servico:
+                         custos_por_servico[nome_rec] = 0
+                    custos_por_servico[nome_rec] += custo_assistente
                     discriminacao.append({
-                        "Serviço": nome, "Função": "Assistente", "Custo (R$)": custo_assistente,
+                        "Serviço": nome_rec, # USANDO NOME DIFERENCIADO
+                        "Função": "Assistente", "Custo (R$)": custo_assistente,
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem, "Demanda (h)": demanda_horas,
                         "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
@@ -340,11 +344,12 @@ with st.container(border=True):
                     custo_etiqueta_unitario = 0.06
                     custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_pallets
                     custo_servicos += custo_etiquetas
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_etiquetas
+                    if nome_rec not in custos_por_servico:
+                         custos_por_servico[nome_rec] = 0
+                    custos_por_servico[nome_rec] += custo_etiquetas
                     discriminacao.append({
-                        "Serviço": nome, "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
+                        "Serviço": nome_rec, # USANDO NOME DIFERENCIADO
+                        "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
                     })
@@ -494,8 +499,12 @@ with st.container(border=True):
                             "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and func["nome"] not in ["Mão de Obra de Terceiros"] else 0
                         })
                 
-                # --- Etiquetagem de Expedição (sem alteração) ---
+                # --- Etiquetagem de Expedição (CORREÇÃO DE CATEGORIA) ---
                 elif "Etiquetagem" in nome:
+                    
+                    # NOVO: Diferenciação do nome do serviço para Expedição
+                    nome_exp = f"{nome} (Expedição)"
+                    
                     salario_assistente = 3713.31
                     unidades_para_etiquetagem_exp = qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets
                     tempo_por_unidade_h = 1 / 3600
@@ -505,11 +514,12 @@ with st.container(border=True):
                     custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
                     
                     custo_servicos += custo_assistente
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_assistente
+                    if nome_exp not in custos_por_servico:
+                         custos_por_servico[nome_exp] = 0
+                    custos_por_servico[nome_exp] += custo_assistente
                     discriminacao.append({
-                        "Serviço": nome, "Função": "Assistente", "Custo (R$)": custo_assistente,
+                        "Serviço": nome_exp, # USANDO NOME DIFERENCIADO
+                        "Função": "Assistente", "Custo (R$)": custo_assistente,
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem_exp, "Demanda (h)": demanda_horas,
                         "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
@@ -519,11 +529,12 @@ with st.container(border=True):
                     custo_etiqueta_unitario = 0.06
                     custo_etiquetas = custo_etiqueta_unitario * qtd_containers * qtd_caixas_outros
                     custo_servicos += custo_etiquetas
-                    if nome not in custos_por_servico:
-                         custos_por_servico[nome] = 0
-                    custos_por_servico[nome] += custo_etiquetas
+                    if nome_exp not in custos_por_servico:
+                         custos_por_servico[nome_exp] = 0
+                    custos_por_servico[nome_exp] += custo_etiquetas
                     discriminacao.append({
-                        "Serviço": nome, "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
+                        "Serviço": nome_exp, # USANDO NOME DIFERENCIADO
+                        "Função": "Etiqueta", "Custo (R$)": custo_etiquetas,
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
                         "Tempo/Container (h)": 0, "Demanda (h)": 0, "HeadCount (h disponível)": 0, "Taxa Ocupação": 0
                     })
@@ -614,31 +625,40 @@ if servicos_selecionados:
             df_discriminacao = df_discriminacao.fillna(0)
             df_discriminacao.index += 1
             
-            # NOVO CÓDIGO: Mapeamento dos serviços para categorias (Serviço Mãe)
-            
             # Dicionário de mapeamento Categoria-Serviço
             categoria_map = {}
             for categoria, tipos in servicos.items():
                 if isinstance(tipos, dict):
                     # Para Recebimento e Expedição, que têm subtipos por tipo_carga
                     for sub_servico in tipos[tipo_carga]:
-                        categoria_map[sub_servico] = categoria
+                        # Se o serviço for "Etiquetagem", ele será tratado manualmente abaixo
+                        if "Etiquetagem" not in sub_servico:
+                            categoria_map[sub_servico] = categoria # Mapeia os serviços únicos (Descarga, TFA, Separação, Carregamento, Stretch)
                 elif isinstance(tipos, list):
-                    # Para Armazenagem, que tem lista direta
+                    # Para Armazenagem
                     for sub_servico in tipos:
                         categoria_map[sub_servico] = categoria
+            
+            # CORREÇÃO: Mapeamento manual para os serviços de Etiquetagem para evitar sobrescrita
+            # Os serviços de Etiquetagem agora têm "(Recebimento)" ou "(Expedição)" no nome na tabela 'discriminacao'
+            if tipo_carga == "Batida":
+                categoria_map["Etiquetagem Batida (Recebimento)"] = "Recebimento"
+                categoria_map["Etiquetagem Batida (Expedição)"] = "Expedição"
+            elif tipo_carga == "Palletizada":
+                categoria_map["Etiquetagem Palletizada (Recebimento)"] = "Recebimento"
+                categoria_map["Etiquetagem Palletizada (Expedição)"] = "Expedição"
             
             # Adiciona Ad Valorem (que é um serviço de receita)
             categoria_map["Ad Valorem"] = "Armazenagem"
             # Adiciona a nova coluna 'Categoria'
             df_discriminacao['Categoria'] = df_discriminacao['Serviço'].map(categoria_map)
-            # Fim do NOVO CÓDIGO
             
             # NOVO CÓDIGO: Calcula a receita para cada item da discriminação, incluindo Ad Valorem
             def calcular_receita(row):
                 if row['Serviço'] == 'Ad Valorem':
                     return (advalorem_percent / 100) * valor_carga * qtd_containers
                 else:
+                    # Verifica se é um custo (Custo > 0) para aplicar o markup. Se for Ad Valorem (Custo=0.0), retorna o custo * (1+markup) que é 0
                     return row['Custo (R$)'] * (1 + markup_decimal)
             
             df_discriminacao['Receita (R$)'] = df_discriminacao.apply(calcular_receita, axis=1)
