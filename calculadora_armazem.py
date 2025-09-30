@@ -728,8 +728,8 @@ if servicos_selecionados:
         # Seção de Métricas Principais (MANTIDA)
         elementos.append(Paragraph("<b>Métricas Financeiras:</b>", styles['Heading2']))
         elementos.append(Spacer(1, 6))
-        elementos.append(Paragraph(f"<b>Custo Total:</b> R$ {custo_servicos:,.2f}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Receita Total:</b> R$ {receita_total:,.2f}", styles['Normal']))
+        elementos.append(Paragraph(f"<b>Custo Total:</b> R$ {custo_servicos:,.2f}", styles['Normal']))
         elementos.append(Paragraph(f"<b>Lucro Bruto:</b> R$ {lucro_total:,.2f}", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
@@ -761,8 +761,8 @@ if servicos_selecionados:
             df_display_summary = df_categoria_summary[cols_to_display_summary].copy()
 
             # Formata as colunas para strings
-            df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Receita (R$)"] = df_display_summary["Receita (R$)"].apply(lambda x: f"R$ {x:,.2f}")
+            df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Lucro (R$)"] = df_display_summary["Lucro (R$)"].apply(lambda x: f"R$ {x:,.2f}")
 
             tabela_dados = [df_display_summary.columns.tolist()] + df_display_summary.values.tolist()
