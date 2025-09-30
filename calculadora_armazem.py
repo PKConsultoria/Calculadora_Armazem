@@ -320,7 +320,7 @@ with st.container(border=True):
                     tempo_pallet_h = 1 / 3600
                     salario_assistente = 3713.31
                     tempo_por_unidade_h = 1 / 3600
-                    demanda_horas = tempo_por_unidade_h * unidades_para_etiquetagem_exp * qtd_containers
+                    demanda_horas = tempo_pallet_h * qtd_containers * qtd_pallets
                     headcount_val = dias_trabalhados * horas_trabalhadas_dia * (eficiencia / 100)
                     taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
                     custo_assistente = salario_assistente * taxa_ocupacao * demanda_horas
@@ -332,7 +332,7 @@ with st.container(border=True):
                     discriminacao.append({
                         "Serviço": nome, "Função": "Assistente", "Custo (R$)": custo_assistente,
                         "Qtd Containers": qtd_containers, "Qtd Pallets": qtd_pallets, "Qtd Caixas/Outros": qtd_caixas_outros,
-                        "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem_exp, "Demanda (h)": demanda_horas,
+                        "Tempo/Container (h)": tempo_por_unidade_h * unidades_para_etiquetagem, "Demanda (h)": demanda_horas,
                         "HeadCount (h disponível)": headcount_val, "Taxa Ocupação": taxa_ocupacao
                     })
 
