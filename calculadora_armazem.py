@@ -311,13 +311,13 @@ with st.container(border=True):
                         })
                 
                 # -----------------------------
-                # Etiquetagem e Custo de Etiqueta (CORREÇÃO DE CATEGORIA)
+                # Etiquetagem e Custo de Etiqueta (CORREÇÃO DE CATEGORIA E NOME)
                 # -----------------------------
                 elif "Etiquetagem" in nome:
                     unidades_para_etiquetagem = qtd_pallets + qtd_caixas_outros
 
-                    # NOVO: Diferenciação do nome do serviço para Recebimento
-                    nome_rec = f"{nome} (Recebimento)"
+                    # ATUALIZADO: Diferenciação do nome do serviço para Recebimento (sufixo R)
+                    nome_rec = f"{nome} R"
                     
                     # Custo do Assistente de Etiquetagem
                     tempo_pallet_h = 1 / 3600
@@ -499,11 +499,11 @@ with st.container(border=True):
                             "Taxa Ocupação": taxa_ocupacao if 'taxa_ocupacao' in locals() and func["nome"] not in ["Mão de Obra de Terceiros"] else 0
                         })
                 
-                # --- Etiquetagem de Expedição (CORREÇÃO DE CATEGORIA) ---
+                # --- Etiquetagem de Expedição (CORREÇÃO DE CATEGORIA E NOME) ---
                 elif "Etiquetagem" in nome:
                     
-                    # NOVO: Diferenciação do nome do serviço para Expedição
-                    nome_exp = f"{nome} (Expedição)"
+                    # ATUALIZADO: Diferenciação do nome do serviço para Expedição (sufixo E)
+                    nome_exp = f"{nome} E"
                     
                     salario_assistente = 3713.31
                     unidades_para_etiquetagem_exp = qtd_caixas_outros if tipo_carga == "Batida" else qtd_pallets
@@ -639,8 +639,7 @@ if servicos_selecionados:
                     for sub_servico in tipos:
                         categoria_map[sub_servico] = categoria
             
-            # CORREÇÃO: Mapeamento manual para os serviços de Etiquetagem para evitar sobrescrita
-            # Os serviços de Etiquetagem agora têm "(Recebimento)" ou "(Expedição)" no nome na tabela 'discriminacao'
+            # ATUALIZADO: Mapeamento manual para os serviços de Etiquetagem com o novo nome simplificado (R ou E)
             if tipo_carga == "Batida":
                 categoria_map["Etiquetagem Batida R"] = "Recebimento"
                 categoria_map["Etiquetagem Batida E"] = "Expedição"
