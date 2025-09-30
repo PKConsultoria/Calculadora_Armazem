@@ -757,7 +757,7 @@ if servicos_selecionados:
             df_categoria_summary['Lucro (R$)'] = df_categoria_summary['Receita (R$)'] - df_categoria_summary['Custo (R$)']
 
             # Formatação dos dados para a tabela PDF
-            cols_to_display_summary = ["Categoria", "Custo (R$)", "Receita (R$)", "Lucro (R$)"]
+            cols_to_display_summary = ["Categoria", "Receita (R$)", "Custo (R$)", "Lucro (R$)"]
             df_display_summary = df_categoria_summary[cols_to_display_summary].copy()
 
             # Formata as colunas para strings
