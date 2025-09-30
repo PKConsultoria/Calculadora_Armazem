@@ -19,7 +19,7 @@ st.set_page_config(page_title="Calculadora Armazém", page_icon="🏭", layout="
 
 # --- Título principal e subtítulo ---
 st.title("🏭 Calculadora de Receitas e Custos - Armazém")
-st.markdown("Open Beta V0.3 - Versão Corrigida (TFA e Supervisor Ajustados)")
+st.markdown("Open Beta V0.3 - Versão Final")
 
 # --- Barra Lateral para informações e métricas ---
 with st.sidebar:
@@ -50,7 +50,7 @@ with st.container(border=True):
         qtd_pallets = st.number_input("Quantidade de Pallets por Container", min_value=0, value=30, step=1)
    
     with col2:
-        qtd_containers = st.number_input("Quantidade de Containers", min_value=30, step=1)
+        qtd_containers = st.number_input("Quantidade de Containers", min_value=0, step=1)
         peso_por_container = st.number_input("Peso (toneladas) de 1 Container", min_value=0.0, step=0.1, format="%.2f")
 
     # --- Campo para embalagem e quantidade de caixas/outros ---
@@ -287,10 +287,10 @@ with st.container(border=True):
                             custo = func["salario"] * qtd_containers
                         
                         elif func["nome"] == "Máquina Elétrica":
-                            # Custo: Custo Horário * Demanda Horas
+                            # CUSTO CORRIGIDO: Custo Horário * Demanda Horas
                             tempo_horas = func["tempo"] / 60
                             demanda_horas = tempo_horas * qtd_containers
-                            custo = func["salario"] * demanda_horas
+                            custo = func["salario"] * demanda_horas 
                             taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0 # Calcula apenas para display
                         
                         else: # Mão de obra (Conferente, Analista, Supervisor)
@@ -367,7 +367,7 @@ with st.container(border=True):
                 elif nome == "TFA":
                     salario_conferente_tfa = 4052.17
                     
-                    # NOVO AJUSTE: O tempo do TFA segue o tempo da operação Palletizada/Batida
+                    # AJUSTE: O tempo do TFA segue o tempo da operação Palletizada/Batida
                     tempo_conferente_tfa_min = tempos_execucao.get(tipo_carga)
                     
                     tempo_conferente_tfa_h = tempo_conferente_tfa_min / 60
@@ -429,7 +429,7 @@ with st.container(border=True):
                         taxa_ocupacao = (demanda_horas / headcount_val) if headcount_val > 0 else 0
                         
                         if func["nome"] == "Máquina Elétrica":
-                            # Custo: Custo Horário * Demanda Horas
+                            # CUSTO CORRIGIDO: Custo Horário * Demanda Horas
                             custo = func["salario"] * demanda_horas
                         else: # Mão de obra
                             custo = func["salario"] * taxa_ocupacao
@@ -488,7 +488,7 @@ with st.container(border=True):
                             custo = func["salario"] * qtd_containers
                         
                         elif func["nome"] == "Máquina GLP":
-                            # Custo: Custo Horário * Demanda Horas
+                            # CUSTO CORRIGIDO: Custo Horário * Demanda Horas
                             tempo_horas = func["tempo"] / 60
                             demanda_horas = tempo_horas * qtd_containers
                             custo = func["salario"] * demanda_horas
