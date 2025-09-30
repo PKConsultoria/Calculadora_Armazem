@@ -774,7 +774,7 @@ if servicos_selecionados:
             df_display_summary["Custo (R$)"] = df_display_summary["Custo (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             df_display_summary["Lucro (R$)"] = df_display_summary["Lucro (R$)"].apply(lambda x: f"R$ {x:,.2f}")
             # NOVO: Formata Margem
-            df_display_summary["Margem"] = df_categoria_summary["Margem (%)"].apply(lambda x: f"{x:,.2f}%")
+            df_display_summary["Margem"] = df_categoria_summary["Margem"].apply(lambda x: f"{x:,.2f}%")
 
 
             tabela_dados = [df_display_summary.columns.tolist()] + df_display_summary.values.tolist()
