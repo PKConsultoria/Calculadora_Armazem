@@ -585,11 +585,9 @@ if servicos_selecionados:
     margem_percentual = (lucro_total / receita_total) * 100 if receita_total > 0 else 0
 
     with col_metricas:
-        st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")
-        
         st.metric("💲 **Receita Total (com markup)**", f"R$ {receita_total:,.2f}")
+        st.metric("💰 **Custo Total dos Serviços**", f"R$ {custo_servicos:,.2f}")           
         st.metric("📊 **Lucro Bruto**", f"R$ {lucro_total:,.2f}")
-        # NOVO: Métrica de Margem
         st.metric("🎯 **Margem (%)**", f"{margem_percentual:,.2f}%")
 
 
@@ -689,7 +687,7 @@ if servicos_selecionados:
         buffer = BytesIO()
 
         # Documento PDF
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=33, bottomMargin=33)
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=70, leftMargin=70, topMargin=25, bottomMargin=25)
         elementos = []
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Heading3Bold', fontName='Helvetica-Bold', fontSize=14, leading=16))
@@ -783,7 +781,7 @@ if servicos_selecionados:
             
             # Criação da Tabela PDF
             # Ajusta colWidths para 5 colunas: Categoria (1.75in), 3x Dinheiro (0.9in cada), Margem (0.75in)
-            tabela = Table(tabela_dados, colWidths=[1.75*inch, 0.9*inch, 0.9*inch, 0.9*inch, 0.75*inch]) 
+            tabela = Table(tabela_dados, colWidths=[1.50*inch, 1.30*inch, 1.30*inch, 1.30*inch, 0.75*inch]) 
             tabela.setStyle(TableStyle([
                 ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003366')),
                 ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
